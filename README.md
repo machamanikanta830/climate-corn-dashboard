@@ -34,3 +34,27 @@ npm install d3 topojson-client
 ```bash
 npm run dev
 ```
+
+
+---
+
+## Getting Started
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/machamanikanta830/climate-corn-dashboard.git
+cd climate-corn-dashboard
+```
+
+### Install Dependencies
+
+```bash
+npm install
+npm install d3 topojson-client
+```
+### Run the Application
+
+```bash
+npm run dev
+```
