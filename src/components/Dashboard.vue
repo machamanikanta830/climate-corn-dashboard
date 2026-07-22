@@ -5,15 +5,13 @@ import UsChoroplethMap from "./UsChoroplethMap.vue";
 import TemperatureTrend from "./TemperatureTrend.vue";
 import YieldTrend from "./YieldTrend.vue";
 import ThemeRiver from "./ThemeRiver.vue";
-import StateTemperatureTrend from "./StateTemperatureTrend.vue";
-import StateYieldTrend from "./StateYieldTrend.vue";
+import StateMetricTrend from "./StateMetricTrend.vue";
 import ScatterPlots from "./ScatterPlots.vue";
-import TreemapVisualization from "./TreemapVisualization.vue";
 import ParallelCoordinates from "./ParallelCoordinates.vue";
 import RankingChart from "./RankingChart.vue";
 import StatisticalInsights from "./StatisticalInsights.vue";
 import PrecipitationTrend from "./PrecipitationTrend.vue";
-import StatePrecipitationTrend from "./StatePrecipitationTrend.vue";
+import { filterRecords, normalizeYearRange } from "../utils/data";
 
 const emit = defineEmits(["goToLanding"]);
 
@@ -22,16 +20,27 @@ const states = ref([]);
 const selectedState = ref("ALL");
 const tempMetric = ref("F");
 const brushedIds = ref([]);
-const hoveredYear = ref(null);
 const hoveredState = ref(null);
 const hoveredNationalYear = ref(null);
 const nationalData = computed(() => yearFilteredAllData.value);
 const scatterResetKey = ref(0);
+const isLoading = ref(true);
+const loadError = ref("");
 
 const minYear = ref(null);
 const maxYear = ref(null);
 const yearStart = ref(null);
 const yearEnd = ref(null);
+
+const displayYearRange = computed(() => {
+  if (yearStart.value == null || yearEnd.value == null) return "";
+  return `${yearStart.value}–${yearEnd.value}`;
+});
+
+const displayYearCount = computed(() => {
+  if (yearStart.value == null || yearEnd.value == null) return 0;
+  return yearEnd.value - yearStart.value + 1;
+});
 
 const yearOptions = computed(() => {
   if (!allData.value.length) return [];
@@ -41,22 +50,14 @@ const yearOptions = computed(() => {
 });
 
 const yearFilteredAllData = computed(() => {
-  if (
-    !allData.value.length ||
-    yearStart.value == null ||
-    yearEnd.value == null
-  ) {
-    return allData.value;
-  }
-  return allData.value.filter(
-    (d) => d.Year >= yearStart.value && d.Year <= yearEnd.value
-  );
+  return filterRecords(allData.value, {
+    startYear: yearStart.value,
+    endYear: yearEnd.value,
+  });
 });
 
 const filteredData = computed(() => {
-  const base = yearFilteredAllData.value;
-  if (selectedState.value === "ALL") return base;
-  return base.filter((d) => d.State === selectedState.value);
+  return filterRecords(yearFilteredAllData.value, { state: selectedState.value });
 });
 
 function handleBrushSelection(ids) {
@@ -65,22 +66,7 @@ function handleBrushSelection(ids) {
 
 function handleSelectState(state) {
   selectedState.value = state;
-
   brushedIds.value = [];
-
-  d3.selectAll(".tooltip").remove();
-  d3.selectAll(".scatter-tooltip").remove();
-
-  if (state !== "ALL") {
-    nextTick(() => {
-      setTimeout(() => {
-        const element = document.getElementById("state-detail-section");
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      }, 150);
-    });
-  }
 }
 
 watch([yearStart, yearEnd], ([start, end]) => {
@@ -92,29 +78,18 @@ watch([yearStart, yearEnd], ([start, end]) => {
   )
     return;
 
-  if (start > end) {
-    const desiredEnd = Math.min(start + 2, maxYear.value);
-    if (desiredEnd - start >= 2) {
-      yearEnd.value = desiredEnd;
-      return;
-    } else {
-      yearStart.value = Math.max(minYear.value, end - 2);
-      return;
-    }
-  }
-
-  if (end - start < 2) {
-    if (start === minYear.value) {
-      yearEnd.value = Math.min(start + 2, maxYear.value);
-    } else if (end === maxYear.value) {
-      yearStart.value = Math.max(minYear.value, end - 2);
-    } else {
-      yearEnd.value = Math.min(start + 2, maxYear.value);
-    }
-  }
+  const [normalizedStart, normalizedEnd] = normalizeYearRange(
+    start,
+    end,
+    minYear.value,
+    maxYear.value
+  );
+  if (normalizedStart !== start) yearStart.value = normalizedStart;
+  if (normalizedEnd !== end) yearEnd.value = normalizedEnd;
 });
 
-watch(selectedState, (newVal, oldVal) => {
+watch(selectedState, (newVal) => {
+  brushedIds.value = [];
   d3.selectAll(".tooltip").remove();
   d3.selectAll(".scatter-tooltip").remove();
   d3.selectAll(".chart-tooltip").remove();
@@ -129,10 +104,6 @@ watch(selectedState, (newVal, oldVal) => {
   }
 });
 
-function handleHoverYear(year) {
-  hoveredYear.value = year;
-}
-
 function handleHoverState(state) {
   hoveredState.value = state;
 }
@@ -140,22 +111,11 @@ function handleHoverState(state) {
 function resetAll() {
   selectedState.value = "ALL";
   brushedIds.value = [];
-  hoveredYear.value = null;
   hoveredState.value = null;
   tempMetric.value = "F";
-
-  if (typeof hoveredNationalYear !== "undefined") {
-    hoveredNationalYear.value = null;
-  }
-  if (typeof stateDetailHoveredYear !== "undefined") {
-    stateDetailHoveredYear.value = null;
-  }
-  if (typeof scatterResetKey !== "undefined") {
-    scatterResetKey.value++;
-  }
-  if (typeof mapResetKey !== "undefined") {
-    mapResetKey.value++;
-  }
+  hoveredNationalYear.value = null;
+  stateDetailHoveredYear.value = null;
+  scatterResetKey.value++;
 
   if (minYear.value != null && maxYear.value != null) {
     yearStart.value = minYear.value;
@@ -175,24 +135,37 @@ function goBack() {
   emit("goToLanding");
 }
 
-onMounted(async () => {
-  const data = await d3.csv(
-    "/data/final_climate_yield_dataset.csv",
-    d3.autoType
-  );
-  data.forEach((d, i) => {
-    d._id = i;
-  });
-  allData.value = data;
-  states.value = Array.from(new Set(data.map((d) => d.State))).sort();
+function reloadPage() {
+  window.location.reload();
+}
 
-  const years = data.map((d) => d.Year);
-  const min = d3.min(years);
-  const max = d3.max(years);
-  minYear.value = min;
-  maxYear.value = max;
-  yearStart.value = min;
-  yearEnd.value = max;
+onMounted(async () => {
+  try {
+    const data = await d3.csv(
+      "/data/final_climate_yield_dataset.csv",
+      d3.autoType
+    );
+    if (!data.length) throw new Error("The dataset is empty");
+
+    data.forEach((d, i) => {
+      d._id = i;
+    });
+    allData.value = data;
+    states.value = Array.from(new Set(data.map((d) => d.State))).sort();
+
+    const years = data.map((d) => d.Year);
+    const min = d3.min(years);
+    const max = d3.max(years);
+    minYear.value = min;
+    maxYear.value = max;
+    yearStart.value = min;
+    yearEnd.value = max;
+  } catch {
+    loadError.value =
+      "The dashboard data could not be loaded. Please refresh the page or try again later.";
+  } finally {
+    isLoading.value = false;
+  }
 });
 
 function scrollToTop() {
@@ -231,21 +204,20 @@ const stateDetailHoveredYear = ref(null);
 <template>
   <div class="dashboard-wrapper">
     <!-- Sticky Navigation Bar -->
-    <nav class="sticky-navbar">
+    <nav class="sticky-navbar" aria-label="Dashboard controls">
       <div class="navbar-content">
         <div class="navbar-left">
           <button @click="goBack" class="back-button">
             <span class="back-icon">←</span>
             Back to Home
           </button>
-          <h1 class="navbar-title">Climate Impact Dashboard</h1>
-          <!-- <span class="live-badge">LIVE DATA</span> -->
+          <h1 class="navbar-title">Climate + Corn Explorer</h1>
         </div>
 
         <div class="navbar-controls">
           <div class="control-group">
-            <label>State:</label>
-            <select v-model="selectedState" class="state-selector">
+            <label for="state-selector">State</label>
+            <select id="state-selector" v-model="selectedState" class="state-selector">
               <option value="ALL">All States</option>
               <option v-for="state in states" :key="state" :value="state">
                 {{ state }}
@@ -259,13 +231,21 @@ const stateDetailHoveredYear = ref(null);
               <span class="year-mini-hint">(min 3 years)</span>
             </div>
             <div class="year-range">
-              <select v-model.number="yearStart" class="year-select">
+              <select
+                v-model.number="yearStart"
+                class="year-select"
+                aria-label="Start year"
+              >
                 <option v-for="y in yearOptions" :key="'start-' + y" :value="y">
                   {{ y }}
                 </option>
               </select>
               <span class="year-separator">–</span>
-              <select v-model.number="yearEnd" class="year-select">
+              <select
+                v-model.number="yearEnd"
+                class="year-select"
+                aria-label="End year"
+              >
                 <option v-for="y in yearOptions" :key="'end-' + y" :value="y">
                   {{ y }}
                 </option>
@@ -274,17 +254,19 @@ const stateDetailHoveredYear = ref(null);
           </div>
 
           <div class="control-group">
-            <label>Temperature:</label>
-            <div class="temp-toggle">
+            <span class="control-label">Temperature</span>
+            <div class="temp-toggle" role="group" aria-label="Temperature unit">
               <button
                 @click="tempMetric = 'F'"
                 :class="['toggle-btn', { active: tempMetric === 'F' }]"
+                :aria-pressed="tempMetric === 'F'"
               >
                 °F
               </button>
               <button
                 @click="tempMetric = 'C'"
                 :class="['toggle-btn', { active: tempMetric === 'C' }]"
+                :aria-pressed="tempMetric === 'C'"
               >
                 °C
               </button>
@@ -296,8 +278,37 @@ const stateDetailHoveredYear = ref(null);
       </div>
     </nav>
 
+    <div v-if="isLoading" class="dashboard-status" role="status">
+      <strong>Preparing the dashboard…</strong>
+      <span>Loading 25 years of state-level climate and yield observations.</span>
+    </div>
+
+    <div v-else-if="loadError" class="dashboard-status error-status" role="alert">
+      <strong>Dashboard unavailable</strong>
+      <span>{{ loadError }}</span>
+      <button class="retry-button" @click="reloadPage">Reload page</button>
+    </div>
+
     <!-- Main Dashboard Content -->
-    <div class="dashboard-container">
+    <main v-else class="dashboard-container">
+      <section class="analysis-intro" aria-labelledby="analysis-title">
+        <div>
+          <p class="analysis-eyebrow">Descriptive exploration</p>
+          <h2 id="analysis-title">Compare place, time, and climate relationships.</h2>
+        </div>
+        <div class="analysis-copy">
+          <p>
+            The dashboard combines NOAA station-based annual climate observations
+            with USDA state corn-yield estimates. Use the controls to focus every
+            coordinated view on the same years and state.
+          </p>
+          <p class="analysis-caution">
+            Correlations are descriptive. They do not isolate causal climate effects
+            or control for technology, irrigation, soil, or farm practices.
+          </p>
+        </div>
+      </section>
+
       <!-- Map Section - LARGER -->
       <section class="section">
         <div class="section-header">
@@ -306,7 +317,11 @@ const stateDetailHoveredYear = ref(null);
             Click a state to explore detailed trends
           </p>
         </div>
-        <div class="map-container-large">
+        <div
+          class="map-container-large"
+          role="group"
+          :aria-label="`State map for ${displayYearRange}`"
+        >
           <UsChoroplethMap
             :data="yearFilteredAllData"
             :selectedState="selectedState"
@@ -321,8 +336,10 @@ const stateDetailHoveredYear = ref(null);
       <!-- National Trends -->
       <section class="section">
         <div class="section-header">
-          <h2>National Trends (2000-2024)</h2>
-          <p class="section-subtitle">25-year climate and yield patterns</p>
+          <h2>State-Average Trends ({{ displayYearRange }})</h2>
+          <p class="section-subtitle">
+            Annual averages across 41 reporting states · {{ displayYearCount }} years selected
+          </p>
         </div>
 
         <!-- Row 1: Yield (full width) -->
@@ -370,11 +387,12 @@ const stateDetailHoveredYear = ref(null);
       <!-- Regional Patterns -->
       <section class="section">
         <div class="section-header">
+          <p class="section-kicker">Advanced exploration</p>
           <h2>Regional Patterns</h2>
-          <p class="section-subtitle">Compare trends across U.S. regions</p>
+          <p class="section-subtitle">Compare descriptive yield patterns across U.S. regions</p>
         </div>
         <div class="chart-card">
-          <h3>Regional Yield Evolution (ThemeRiver)</h3>
+          <h3>Regional Yield Evolution</h3>
           <ThemeRiver :data="yearFilteredAllData" />
         </div>
       </section>
@@ -384,7 +402,7 @@ const stateDetailHoveredYear = ref(null);
         <div class="section-header">
           <h2>Correlation Analysis</h2>
           <p class="section-subtitle">
-            Relationship between climate factors and corn yield
+            Pooled state-year relationships; correlation does not imply causation
           </p>
         </div>
 
@@ -402,7 +420,7 @@ const stateDetailHoveredYear = ref(null);
 
         <!-- Parallel Coordinates below Scatter -->
         <div class="chart-card" style="margin-top: 2rem">
-          <h3>Parallel Coordinates View</h3>
+          <h3>Advanced Multivariable View</h3>
           <ParallelCoordinates
             :data="yearFilteredAllData"
             :tempMetric="tempMetric"
@@ -428,18 +446,16 @@ const stateDetailHoveredYear = ref(null);
         </div>
       </section>
 
-      <!-- Distribution -->
+      <!-- Statistical summary -->
       <section class="section">
         <div class="section-header">
-          <h2>Yield Distribution</h2>
-          <p class="section-subtitle">Production breakdown by state</p>
+          <h2>Statistical Summary</h2>
+          <p class="section-subtitle">
+            Descriptive statistics for {{ displayYearRange }} across all reporting states
+          </p>
         </div>
         <div class="chart-card">
-          <TreemapVisualization
-            :data="yearFilteredAllData"
-            :selectedState="selectedState"
-            @select-state="handleSelectState"
-          />
+          <StatisticalInsights :data="yearFilteredAllData" :tempMetric="tempMetric" />
         </div>
       </section>
 
@@ -459,8 +475,9 @@ const stateDetailHoveredYear = ref(null);
           <div class="col-md-12">
             <div class="chart-card">
               <h3>{{ selectedState }} Yield Trend</h3>
-              <StateYieldTrend
+              <StateMetricTrend
                 :data="filteredData"
+                metric="yield"
                 :tempMetric="tempMetric"
                 :hoveredYear="stateDetailHoveredYear"
                 @hover-year="stateDetailHoveredYear = $event"
@@ -474,8 +491,9 @@ const stateDetailHoveredYear = ref(null);
           <div class="col-md-6">
             <div class="chart-card">
               <h3>{{ selectedState }} Temperature Trend</h3>
-              <StateTemperatureTrend
+              <StateMetricTrend
                 :data="filteredData"
+                metric="temperature"
                 :tempMetric="tempMetric"
                 :hoveredYear="stateDetailHoveredYear"
                 @hover-year="stateDetailHoveredYear = $event"
@@ -485,8 +503,9 @@ const stateDetailHoveredYear = ref(null);
           <div class="col-md-6">
             <div class="chart-card">
               <h3>{{ selectedState }} Precipitation Trend</h3>
-              <StatePrecipitationTrend
+              <StateMetricTrend
                 :data="filteredData"
+                metric="precipitation"
                 :tempMetric="tempMetric"
                 :hoveredYear="stateDetailHoveredYear"
                 @hover-year="stateDetailHoveredYear = $event"
@@ -506,22 +525,30 @@ const stateDetailHoveredYear = ref(null);
         <div class="footer-content">
           <div class="footer-section">
             <h4>Data Sources</h4>
-            <p>NOAA Climate Data (2000-2024)</p>
-            <p>USDA Agricultural Statistics</p>
+            <p>
+              <a href="https://www.ncei.noaa.gov/cdo-web/webservices/v2" target="_blank" rel="noreferrer">
+                NOAA GSOY climate data
+              </a>
+            </p>
+            <p>
+              <a href="https://www.nass.usda.gov/Quick_Stats/" target="_blank" rel="noreferrer">
+                USDA NASS Quick Stats
+              </a>
+            </p>
           </div>
           <div class="footer-section">
             <h4>Coverage</h4>
-            <p>41 U.S. States</p>
-            <p>25 Years of Data</p>
+            <p>41 corn-reporting states</p>
+            <p>1,025 observations · 2000–2024</p>
           </div>
           <div class="footer-section">
             <h4>Project Info</h4>
-            <p>CS:4980 - Interactive Data Visualization</p>
-            <p>University of Iowa, Fall 2025</p>
+            <p>Created by Manikanta Macha and Yashwanth Kumar Mogili</p>
+            <p>Interactive Data Visualization · University of Iowa</p>
           </div>
         </div>
       </footer>
-    </div>
+    </main>
   </div>
 </template>
 
@@ -534,7 +561,7 @@ const stateDetailHoveredYear = ref(null);
 
 .dashboard-wrapper {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  background: #f4f2ec;
   color: #1e293b;
 }
 
@@ -544,7 +571,7 @@ const stateDetailHoveredYear = ref(null);
   top: 0;
   z-index: 1000;
   background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-  border-bottom: 2px solid #3b82f6;
+  border-bottom: 2px solid #2f6b4f;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
 }
@@ -659,6 +686,7 @@ const stateDetailHoveredYear = ref(null);
 .navbar-controls {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 1.5rem;
 }
 
@@ -668,7 +696,8 @@ const stateDetailHoveredYear = ref(null);
   gap: 0.5rem;
 }
 
-.control-group label {
+.control-group label,
+.control-label {
   font-size: 0.9rem;
   font-weight: 600;
   color: #475569;
@@ -746,9 +775,84 @@ const stateDetailHoveredYear = ref(null);
   padding: 2rem;
 }
 
+.dashboard-status {
+  min-height: 70vh;
+  display: grid;
+  place-content: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+  color: #475569;
+}
+
+.dashboard-status strong {
+  color: #18332b;
+  font-size: 1.4rem;
+}
+
+.error-status {
+  color: #991b1b;
+}
+
+.retry-button {
+  justify-self: center;
+  margin-top: 1rem;
+  padding: 0.65rem 1rem;
+  background: #18332b;
+  color: white;
+  border-radius: 6px;
+}
+
+.analysis-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 4rem;
+  padding: 2.5rem;
+  margin-bottom: 4rem;
+  background: #18332b;
+  color: white;
+  border-top: 5px solid #e3aa35;
+}
+
+.analysis-intro h2 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 500;
+  line-height: 1.05;
+}
+
+.analysis-eyebrow,
+.section-kicker {
+  margin: 0 0 0.75rem;
+  color: #e9c779;
+  font-size: 0.75rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.analysis-copy {
+  color: #d7e0dc;
+  line-height: 1.65;
+}
+
+.analysis-caution {
+  padding-top: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  color: #bac8c2;
+  font-size: 0.9rem;
+}
+
+.section-kicker {
+  color: #2f6b4f;
+}
+
 /* Sections */
 .section {
   margin-bottom: 4rem;
+  scroll-margin-top: 9rem;
 }
 
 .section-header {
@@ -877,6 +981,18 @@ const stateDetailHoveredYear = ref(null);
   margin-bottom: 0.5rem;
 }
 
+.footer-section a {
+  color: #1d4f3c;
+  text-underline-offset: 0.2rem;
+}
+
+button:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 3px solid #e3aa35;
+  outline-offset: 3px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .navbar-content {
@@ -886,6 +1002,36 @@ const stateDetailHoveredYear = ref(null);
 
   .row {
     grid-template-columns: 1fr;
+  }
+
+  .navbar-left,
+  .navbar-controls,
+  .control-group {
+    width: 100%;
+  }
+
+  .navbar-left {
+    justify-content: space-between;
+  }
+
+  .navbar-controls {
+    justify-content: center;
+  }
+
+  .analysis-intro {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+
+  .dashboard-container {
+    padding: 1rem;
+  }
+
+  .map-container-large,
+  .scatter-container,
+  .chart-card {
+    padding: 1rem;
   }
 }
 

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import * as d3 from "d3";
+import { regressionFromPairs } from "../utils/statistics";
 
 const props = defineProps({
   data: { type: Array, required: true },
@@ -22,13 +23,22 @@ function render() {
   container.selectAll("*").remove();
 
   const containerWidth = container.node().clientWidth || 800;
-  const plotWidth = (containerWidth - 60) / 2;
-  const plotHeight = 400;
+  const stacked = containerWidth < 820;
+  const plotWidth = stacked ? containerWidth : (containerWidth - 60) / 2;
+  const plotHeight = stacked ? 350 : 400;
+  const fullHeight = stacked
+    ? plotHeight * 2 + margin.top + margin.bottom + 60
+    : plotHeight + margin.top + margin.bottom;
 
   const svg = container
     .append("svg")
     .attr("width", "100%")
-    .attr("height", plotHeight + margin.top + margin.bottom);
+    .attr("height", fullHeight)
+    .attr("role", "img")
+    .attr(
+      "aria-label",
+      "Two scatterplots showing corn yield against temperature and precipitation"
+    );
 
   const innerWidth = plotWidth - margin.left - margin.right;
   const innerHeight = plotHeight - margin.top - margin.bottom;
@@ -99,7 +109,7 @@ function render() {
     .attr("font-weight", "600")
     .text("Yield (bu/acre)");
 
-  const regression1 = linearRegression(
+  const regression1 = regressionFromPairs(
     props.data.map((d) => [tempAccessor(d), d.Yield_bu_acre])
   );
 
@@ -138,7 +148,9 @@ function render() {
     .append("g")
     .attr(
       "transform",
-      `translate(${plotWidth + 30 + margin.left},${margin.top})`
+      stacked
+        ? `translate(${margin.left},${plotHeight + margin.top + 50})`
+        : `translate(${plotWidth + 30 + margin.left},${margin.top})`
     );
 
   const x2 = d3
@@ -185,7 +197,7 @@ function render() {
     .attr("font-weight", "600")
     .text("Yield (bu/acre)");
 
-  const regression2 = linearRegression(
+  const regression2 = regressionFromPairs(
     props.data.map((d) => [d.PRCP, d.Yield_bu_acre])
   );
 
@@ -407,31 +419,6 @@ function render() {
   }
 }
 
-function linearRegression(data) {
-  const n = data.length;
-  let sumX = 0,
-    sumY = 0,
-    sumXY = 0,
-    sumX2 = 0,
-    sumY2 = 0;
-
-  data.forEach(([x, y]) => {
-    sumX += x;
-    sumY += y;
-    sumXY += x * y;
-    sumX2 += x * x;
-    sumY2 += y * y;
-  });
-
-  const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-  const intercept = (sumY - slope * sumX) / n;
-  const r =
-    (n * sumXY - sumX * sumY) /
-    Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
-
-  return { slope, intercept, r };
-}
-
 watch(enableBrush, (newVal) => {
   if (!newVal) {
     emit("brush-selection", []);
@@ -489,21 +476,25 @@ watch(
       >
         <input type="checkbox" v-model="enableBrush" style="cursor: pointer" />
         <span style="font-weight: 600">
-          Enable Brush Selection (for Parallel Coordinates)
+          Enable rectangular selection
         </span>
       </label>
       <span style="font-size: 0.85rem; color: #64748b; font-style: italic">
         {{
           enableBrush
-            ? "Drag to select, click to select state"
+            ? "Drag inside either plot to highlight the same records below"
             : "Hover to see details, click to select state"
         }}
       </span>
     </div>
-    <div ref="containerRef" style="position: relative; width: 100%"></div>
+    <div ref="containerRef" class="scatter-chart"></div>
   </div>
 </template>
 
 <style scoped>
-/* no additional styles needed; tooltip is styled inline */
+.scatter-chart {
+  position: relative;
+  width: 100%;
+  min-width: 300px;
+}
 </style>

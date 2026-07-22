@@ -1,42 +1,15 @@
 <script setup>
-import { ref, computed, watch } from "vue";
+import { computed } from "vue";
+import {
+  linearRegression,
+  mean,
+  pearsonCorrelation,
+} from "../utils/statistics";
 
 const props = defineProps({
   data: { type: Array, required: true },
   tempMetric: { type: String, default: "C" },
-  selectedState: { type: String, default: "ALL" },
 });
-
-function pearsonCorrelation(x, y) {
-  const n = x.length;
-  if (n === 0) return 0;
-
-  const sumX = x.reduce((a, b) => a + b, 0);
-  const sumY = y.reduce((a, b) => a + b, 0);
-  const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
-  const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
-  const sumY2 = y.reduce((sum, yi) => sum + yi * yi, 0);
-
-  const numerator = n * sumXY - sumX * sumY;
-  const denominator = Math.sqrt(
-    (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY)
-  );
-
-  return denominator === 0 ? 0 : numerator / denominator;
-}
-
-function linearRegression(x, y) {
-  const n = x.length;
-  const sumX = x.reduce((a, b) => a + b, 0);
-  const sumY = y.reduce((a, b) => a + b, 0);
-  const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
-  const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
-
-  const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-  const intercept = (sumY - slope * sumX) / n;
-
-  return { slope, intercept };
-}
 
 const statistics = computed(() => {
   if (!props.data || props.data.length === 0) return null;
@@ -64,9 +37,9 @@ const statistics = computed(() => {
   const yieldChange = yieldTrend.slope * yearSpan;
   const precipChange = precipTrend.slope * yearSpan;
 
-  const avgTemp = temps.reduce((a, b) => a + b, 0) / temps.length;
-  const avgPrecip = precips.reduce((a, b) => a + b, 0) / precips.length;
-  const avgYield = yields.reduce((a, b) => a + b, 0) / yields.length;
+  const avgTemp = mean(temps);
+  const avgPrecip = mean(precips);
+  const avgYield = mean(yields);
 
   const minYear = Math.min(...years);
   const maxYear = Math.max(...years);
@@ -161,13 +134,9 @@ function getTrendDirection(slope) {
             {{ getCorrelationDirection(statistics.tempYieldCorr) }} relationship
           </div>
           <div class="corr-insight">
-            Higher temperatures are
-            {{
-              statistics.tempYieldCorr > 0
-                ? "associated with"
-                : "negatively correlated with"
-            }}
-            corn yield.
+            Temperature and corn yield move
+            {{ statistics.tempYieldCorr > 0 ? "together" : "in opposite directions" }}
+            in this filtered sample.
           </div>
         </div>
 
@@ -195,12 +164,9 @@ function getTrendDirection(slope) {
             relationship
           </div>
           <div class="corr-insight">
-            {{
-              statistics.precipYieldCorr > 0
-                ? "More rainfall supports"
-                : "Less rainfall is associated with"
-            }}
-            higher yields.
+            Precipitation and corn yield move
+            {{ statistics.precipYieldCorr > 0 ? "together" : "in opposite directions" }}
+            in this filtered sample.
           </div>
         </div>
 
@@ -350,13 +316,8 @@ function getTrendDirection(slope) {
             >
             between temperature and yield (r={{
               statistics.tempYieldCorr.toFixed(2)
-            }}), suggesting
-            {{
-              statistics.tempYieldCorr > 0
-                ? "warmer temperatures may support"
-                : "heat stress may reduce"
-            }}
-            corn production.
+            }}) in the selected observations. This is an association, not a
+            causal estimate.
           </span>
         </div>
 
@@ -373,13 +334,8 @@ function getTrendDirection(slope) {
             >
             between precipitation and yield (r={{
               statistics.precipYieldCorr.toFixed(2)
-            }}), indicating
-            {{
-              statistics.precipYieldCorr > 0
-                ? "adequate rainfall is beneficial"
-                : "excessive rainfall may harm"
-            }}
-            for crop growth.
+            }}) in the selected observations. Other agricultural and regional
+            factors are not controlled here.
           </span>
         </div>
 
@@ -393,11 +349,8 @@ function getTrendDirection(slope) {
                 tempMetric
               }}</strong
             >
-            over the study period, showing
-            {{
-              Math.abs(statistics.tempChange) > 2 ? "significant" : "notable"
-            }}
-            climate change trends.
+            across the fitted study-period trend. This describes the selected
+            observations and is not a significance test.
           </span>
         </div>
 
@@ -408,12 +361,8 @@ function getTrendDirection(slope) {
             <strong
               >{{ statistics.yieldChange > 0 ? "improved" : "declined" }} by
               {{ Math.abs(statistics.yieldChange).toFixed(0) }} bu/acre</strong
-            >,
-            {{
-              statistics.yieldChange > 0
-                ? "likely due to technological advances in agriculture despite climate pressures"
-                : "raising concerns about agricultural sustainability"
-            }}.
+            > across the fitted trend. The dashboard does not identify the
+            causes of that change.
           </span>
         </div>
       </div>

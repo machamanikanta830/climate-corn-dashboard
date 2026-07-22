@@ -99,8 +99,8 @@ const displayData = computed(() => {
   );
 
   const regionalData = [];
-  byYearRegion.forEach(([year, regionsMap]) => {
-    regionsMap.forEach(([region, data]) => {
+  byYearRegion.forEach(([, regionsMap]) => {
+    regionsMap.forEach(([, data]) => {
       regionalData.push(data);
     });
   });
@@ -192,7 +192,7 @@ function render() {
   function path(d) {
     const values = [
       ["Year", d.Year],
-      ["temp", d.temp || tempAccessor(d)],
+      ["temp", d.temp ?? tempAccessor(d)],
       ["PRCP", d.PRCP],
       ["Yield_bu_acre", d.Yield_bu_acre],
     ];

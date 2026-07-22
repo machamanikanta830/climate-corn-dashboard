@@ -107,28 +107,25 @@ function render() {
     (d) => d.State
   );
 
-  let colorScale, values, unit, label;
+  let colorScale, values, label;
 
   if (colorBy.value === "Yield") {
     values = Array.from(stateData.values()).map((d) => d.yield);
     colorScale = d3
       .scaleSequential(d3.interpolateBlues)
       .domain(d3.extent(values));
-    unit = "bu/acre";
     label = "Average Corn Yield (bu/acre)";
   } else if (colorBy.value === "Temp") {
     values = Array.from(stateData.values()).map((d) => d.temp);
     colorScale = d3
       .scaleSequential(d3.interpolateReds)
       .domain(d3.extent(values));
-    unit = `°${props.tempMetric}`;
     label = `Average Temperature (°${props.tempMetric})`;
   } else {
     values = Array.from(stateData.values()).map((d) => d.precip);
     colorScale = d3
       .scaleSequential(d3.interpolateGreens)
       .domain(d3.extent(values));
-    unit = "inches";
     label = "Average Precipitation (inches)";
   }
 
