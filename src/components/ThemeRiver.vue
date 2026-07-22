@@ -29,10 +29,10 @@ const regions = {
 
 const regionNames = Object.keys(regions);
 const colors = new Map([
-  ["Midwest", "#2563eb"],
-  ["South", "#d97706"],
-  ["West", "#059669"],
-  ["Northeast", "#7c3aed"],
+  ["Midwest", "#2f6b4f"],
+  ["South", "#e3aa35"],
+  ["West", "#6f8f70"],
+  ["Northeast", "#9b5f3f"],
 ]);
 
 function getRegion(state) {
@@ -104,16 +104,16 @@ function render() {
     .attr("x2", width)
     .attr("y1", (value) => y(value))
     .attr("y2", (value) => y(value))
-    .attr("stroke", "#e2e8f0");
+    .attr("stroke", "#ddd6c6");
 
   g.append("g")
     .attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(x).ticks(Math.min(12, regionalData.value.length)).tickFormat(d3.format("d")))
-    .call((axis) => axis.select(".domain").attr("stroke", "#94a3b8"));
+    .call((axis) => axis.select(".domain").attr("stroke", "#8e9b95"));
 
   g.append("g")
     .call(d3.axisLeft(y).ticks(5))
-    .call((axis) => axis.select(".domain").attr("stroke", "#94a3b8"));
+    .call((axis) => axis.select(".domain").attr("stroke", "#8e9b95"));
 
   const line = d3
     .line()
@@ -147,14 +147,14 @@ function render() {
     item.append("line").attr("x2", 22).attr("y1", 7).attr("y2", 7)
       .attr("stroke", colors.get(region)).attr("stroke-width", 3);
     item.append("text").attr("x", 29).attr("y", 11).attr("font-size", 12)
-      .attr("fill", "#334155").text(region);
+      .attr("fill", "#18332b").text(region);
   });
 
   g.append("text")
     .attr("x", width / 2)
     .attr("y", height + 42)
     .attr("text-anchor", "middle")
-    .attr("fill", "#475569")
+    .attr("fill", "#5f6f68")
     .text("Year");
 
   g.append("text")
@@ -162,12 +162,12 @@ function render() {
     .attr("x", -height / 2)
     .attr("y", -48)
     .attr("text-anchor", "middle")
-    .attr("fill", "#475569")
+    .attr("fill", "#5f6f68")
     .text("Regional average yield (bu/acre)");
 
   const hoverLine = g.append("line")
     .attr("y2", height)
-    .attr("stroke", "#64748b")
+    .attr("stroke", "#5f6f68")
     .attr("stroke-dasharray", "4,4")
     .attr("opacity", 0);
 

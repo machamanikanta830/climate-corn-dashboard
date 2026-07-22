@@ -69,8 +69,8 @@ function render() {
     .attr("y2", "100%")
     .selectAll("stop")
     .data([
-      { o: "0%", c: "#22c55e", a: 0.6 },
-      { o: "100%", c: "#22c55e", a: 0.1 },
+      { o: "0%", c: "#6f9a76", a: 0.55 },
+      { o: "100%", c: "#6f9a76", a: 0.08 },
     ])
     .join("stop")
     .attr("offset", (d) => d.o)
@@ -98,7 +98,7 @@ function render() {
   g.append("path")
     .datum(aggregatedData.value)
     .attr("fill", "none")
-    .attr("stroke", "#16a34a")
+    .attr("stroke", "#2f6b4f")
     .attr("stroke-width", 3)
     .attr("d", line);
 
@@ -111,20 +111,20 @@ function render() {
     .attr("x2", width)
     .attr("y1", (d) => y(d))
     .attr("y2", (d) => y(d))
-    .attr("stroke", "#334155")
+    .attr("stroke", "#18332b")
     .attr("stroke-width", 1)
     .attr("opacity", 0.5);
 
   g.append("g")
     .attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(x).tickFormat(d3.format("d")))
-    .attr("color", "#94a3b8")
+    .attr("color", "#8e9b95")
     .selectAll("text")
     .attr("font-size", "12px");
 
   g.append("g")
     .call(d3.axisLeft(y).ticks(5))
-    .attr("color", "#94a3b8")
+    .attr("color", "#8e9b95")
     .selectAll("text")
     .attr("font-size", "12px");
 
@@ -132,7 +132,7 @@ function render() {
     .attr("x", width / 2)
     .attr("y", height + 40)
     .attr("text-anchor", "middle")
-    .attr("fill", "#475569")
+    .attr("fill", "#5f6f68")
     .attr("font-size", "14px")
     .text("Year");
 
@@ -141,7 +141,7 @@ function render() {
     .attr("x", -height / 2)
     .attr("y", -45)
     .attr("text-anchor", "middle")
-    .attr("fill", "#475569")
+    .attr("fill", "#5f6f68")
     .attr("font-size", "14px")
     .text("Corn Yield (bu/acre)");
 
@@ -150,13 +150,13 @@ function render() {
     .attr("class", "chart-tooltip")
     .style("position", "absolute")
     .style("background", "rgba(15,23,42,0.95)")
-    .style("color", "#f9fafb")
+    .style("color", "#f5f2e9")
     .style("padding", "10px 14px")
     .style("border-radius", "8px")
     .style("font-size", "12px")
     .style("pointer-events", "none")
     .style("box-shadow", "0 4px 12px rgba(0,0,0,0.4)")
-    .style("border", "1px solid #22c55e")
+    .style("border", "1px solid #e3aa35")
     .style("opacity", 0);
 
   const points = g
@@ -167,8 +167,8 @@ function render() {
     .attr("cx", (d) => x(d.year))
     .attr("cy", (d) => y(d.avgYield))
     .attr("r", (d) => (props.hoveredYear === d.year ? 8 : 5))
-    .attr("fill", "#16a34a")
-    .attr("stroke", "#fff")
+    .attr("fill", "#2f6b4f")
+    .attr("stroke", "#fffdf7")
     .attr("stroke-width", 2)
     .style("cursor", "pointer")
     .on("mouseenter", function (event, d) {
@@ -182,10 +182,10 @@ function render() {
           `
       <div style="font-weight:600;margin-bottom:4px;">Year: ${d.year}</div>
       <div>Yield: <strong>${d.avgYield.toFixed(1)} bu/acre</strong></div>
-      <div style="color:#f97316;margin-top:4px;">Temp: <strong>${d.avgTemp.toFixed(
+      <div style="color:#b7653b;margin-top:4px;">Temp: <strong>${d.avgTemp.toFixed(
         1
       )}°${props.tempMetric}</strong></div>
-      <div style="color:#0ea5e9;margin-top:4px;">Precip: <strong>${d.avgPrecip.toFixed(
+      <div style="color:#4f7475;margin-top:4px;">Precip: <strong>${d.avgPrecip.toFixed(
         2
       )} in</strong></div>
       `

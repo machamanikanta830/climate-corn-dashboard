@@ -24,7 +24,7 @@ const configuration = computed(() => {
       label: `Temperature (°${props.tempMetric})`,
       shortLabel: "Temperature",
       unit: `°${props.tempMetric}`,
-      color: "#dc2626",
+      color: "#b7653b",
       accessor: (row) => (props.tempMetric === "C" ? row.TAVG_C : row.TAVG),
     };
   }
@@ -33,7 +33,7 @@ const configuration = computed(() => {
       label: "Precipitation (inches)",
       shortLabel: "Precipitation",
       unit: " in",
-      color: "#2563eb",
+      color: "#4f7475",
       accessor: (row) => row.PRCP,
     };
   }
@@ -41,7 +41,7 @@ const configuration = computed(() => {
     label: "Corn yield (bu/acre)",
     shortLabel: "Yield",
     unit: " bu/acre",
-    color: "#16805d",
+    color: "#2f6b4f",
     accessor: (row) => row.Yield_bu_acre,
   };
 });
@@ -99,7 +99,7 @@ function render() {
     .attr("x2", width)
     .attr("y1", (value) => y(value))
     .attr("y2", (value) => y(value))
-    .attr("stroke", "#e2e8f0");
+    .attr("stroke", "#ddd6c6");
 
   const area = d3
     .area()
@@ -168,21 +168,21 @@ function render() {
   g.append("g")
     .attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(x).ticks(Math.min(8, trendData.value.length)).tickFormat(d3.format("d")))
-    .attr("color", "#64748b");
-  g.append("g").call(d3.axisLeft(y).ticks(5)).attr("color", "#64748b");
+    .attr("color", "#5f6f68");
+  g.append("g").call(d3.axisLeft(y).ticks(5)).attr("color", "#5f6f68");
 
   g.append("text")
     .attr("x", width / 2)
     .attr("y", height + 42)
     .attr("text-anchor", "middle")
-    .attr("fill", "#475569")
+    .attr("fill", "#5f6f68")
     .text("Year");
   g.append("text")
     .attr("transform", "rotate(-90)")
     .attr("x", -height / 2)
     .attr("y", -47)
     .attr("text-anchor", "middle")
-    .attr("fill", "#475569")
+    .attr("fill", "#5f6f68")
     .text(config.label);
 }
 

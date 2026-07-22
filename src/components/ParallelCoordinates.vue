@@ -200,18 +200,18 @@ function render() {
   }
 
   const regionColors = {
-    Midwest: "#3b82f6",
-    South: "#f59e0b",
-    West: "#10b981",
-    Northeast: "#8b5cf6",
+    Midwest: "#2f6b4f",
+    South: "#e3aa35",
+    West: "#6f8f70",
+    Northeast: "#9b5f3f",
   };
 
   const color = (d) => {
     if (props.selectedState !== "ALL" && d.State === props.selectedState) {
-      return "#ef3b2c";
+      return "#b7653b";
     }
     if (brushedSet.size && brushedSet.has(d._id)) {
-      return "#756bb1";
+      return "#4f7475";
     }
     return regionColors[d.State] || "rgba(150,150,150,0.6)";
   };
@@ -296,17 +296,17 @@ function render() {
       d3.select(this).call(d3.axisLeft(d.scale).ticks(4));
     })
     .selectAll("text")
-    .attr("fill", "#475569")
+    .attr("fill", "#5f6f68")
     .attr("font-size", "11px");
 
-  axisGroup.selectAll(".domain, .tick line").attr("stroke", "#cbd5e1");
+  axisGroup.selectAll(".domain, .tick line").attr("stroke", "#c9c4b6");
 
   axisGroup
     .append("text")
     .attr("y", -10)
     .attr("text-anchor", "middle")
     .attr("font-size", "12px")
-    .attr("fill", "#1e293b")
+    .attr("fill", "#18332b")
     .attr("font-weight", "600")
     .text((d) => d.label);
 
@@ -319,10 +319,10 @@ function render() {
       );
 
     const legendData = [
-      { region: "Midwest", color: "#3b82f6" },
-      { region: "South", color: "#f59e0b" },
-      { region: "West", color: "#10b981" },
-      { region: "Northeast", color: "#8b5cf6" },
+      { region: "Midwest", color: "#2f6b4f" },
+      { region: "South", color: "#e3aa35" },
+      { region: "West", color: "#6f8f70" },
+      { region: "Northeast", color: "#9b5f3f" },
     ];
 
     legendData.forEach((item, i) => {
@@ -343,7 +343,7 @@ function render() {
         .append("text")
         .attr("x", 25)
         .attr("y", 14)
-        .attr("fill", "#475569")
+        .attr("fill", "#5f6f68")
         .attr("font-size", "11px")
         .text(item.region);
     });
@@ -383,7 +383,7 @@ watch(
 .parallel-hint {
   text-align: center;
   font-size: 0.9rem;
-  color: #64748b;
+  color: #5f6f68;
   margin-bottom: 0.5rem;
   font-style: italic;
 }
@@ -394,17 +394,17 @@ watch(
 
 :deep(.dimension .domain),
 :deep(.dimension .tick line) {
-  stroke: #475569;
+  stroke: #5f6f68;
 }
 
 :deep(.dimension .tick text) {
-  fill: #475569;
+  fill: #5f6f68;
 }
 
 /* NEW: tooltip style */
 :deep(.pc-tooltip) {
   background: rgba(15, 23, 42, 0.9);
-  color: #f9fafb;
+  color: #f5f2e9;
   padding: 6px 10px;
   border-radius: 8px;
   font-size: 12px;

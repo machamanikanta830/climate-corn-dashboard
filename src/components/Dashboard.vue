@@ -312,10 +312,13 @@ const stateDetailHoveredYear = ref(null);
       <!-- Map Section - LARGER -->
       <section class="section">
         <div class="section-header">
-          <h2>Geographic Overview</h2>
-          <p class="section-subtitle">
-            Click a state to explore detailed trends
-          </p>
+          <p class="section-kicker">01 · Landscape</p>
+          <div>
+            <h2>Geographic Overview</h2>
+            <p class="section-subtitle">
+              Click a state to explore detailed trends
+            </p>
+          </div>
         </div>
         <div
           class="map-container-large"
@@ -336,10 +339,13 @@ const stateDetailHoveredYear = ref(null);
       <!-- National Trends -->
       <section class="section">
         <div class="section-header">
-          <h2>State-Average Trends ({{ displayYearRange }})</h2>
-          <p class="section-subtitle">
-            Annual averages across 41 reporting states · {{ displayYearCount }} years selected
-          </p>
+          <p class="section-kicker">02 · Time</p>
+          <div>
+            <h2>State-Average Trends ({{ displayYearRange }})</h2>
+            <p class="section-subtitle">
+              Annual averages across 41 reporting states · {{ displayYearCount }} years selected
+            </p>
+          </div>
         </div>
 
         <!-- Row 1: Yield (full width) -->
@@ -387,9 +393,11 @@ const stateDetailHoveredYear = ref(null);
       <!-- Regional Patterns -->
       <section class="section">
         <div class="section-header">
-          <p class="section-kicker">Advanced exploration</p>
-          <h2>Regional Patterns</h2>
-          <p class="section-subtitle">Compare descriptive yield patterns across U.S. regions</p>
+          <p class="section-kicker">03 · Regions</p>
+          <div>
+            <h2>Regional Patterns</h2>
+            <p class="section-subtitle">Compare descriptive yield patterns across U.S. regions</p>
+          </div>
         </div>
         <div class="chart-card">
           <h3>Regional Yield Evolution</h3>
@@ -400,10 +408,13 @@ const stateDetailHoveredYear = ref(null);
       <!-- Correlation Analysis -->
       <section class="section">
         <div class="section-header">
-          <h2>Correlation Analysis</h2>
-          <p class="section-subtitle">
-            Pooled state-year relationships; correlation does not imply causation
-          </p>
+          <p class="section-kicker">04 · Relationships</p>
+          <div>
+            <h2>Correlation Analysis</h2>
+            <p class="section-subtitle">
+              Pooled state-year relationships; correlation does not imply causation
+            </p>
+          </div>
         </div>
 
         <!-- Scatter Plots with Brush -->
@@ -433,8 +444,11 @@ const stateDetailHoveredYear = ref(null);
       <!-- Rankings -->
       <section class="section">
         <div class="section-header">
-          <h2>State Rankings</h2>
-          <p class="section-subtitle">Top and bottom performers</p>
+          <p class="section-kicker">05 · Comparison</p>
+          <div>
+            <h2>State Rankings</h2>
+            <p class="section-subtitle">Top and bottom performers</p>
+          </div>
         </div>
         <div class="chart-card">
           <RankingChart
@@ -449,10 +463,13 @@ const stateDetailHoveredYear = ref(null);
       <!-- Statistical summary -->
       <section class="section">
         <div class="section-header">
-          <h2>Statistical Summary</h2>
-          <p class="section-subtitle">
-            Descriptive statistics for {{ displayYearRange }} across all reporting states
-          </p>
+          <p class="section-kicker">06 · Summary</p>
+          <div>
+            <h2>Statistical Summary</h2>
+            <p class="section-subtitle">
+              Descriptive statistics for {{ displayYearRange }} across all reporting states
+            </p>
+          </div>
         </div>
         <div class="chart-card">
           <StatisticalInsights :data="yearFilteredAllData" :tempMetric="tempMetric" />
@@ -466,8 +483,11 @@ const stateDetailHoveredYear = ref(null);
         class="state-detail-section"
       >
         <div class="section-header">
-          <h2>{{ selectedState }} Deep Dive</h2>
-          <p class="section-subtitle">Detailed trends and statistics</p>
+          <p class="section-kicker">Selected state</p>
+          <div>
+            <h2>{{ selectedState }} Deep Dive</h2>
+            <p class="section-subtitle">Detailed trends and statistics</p>
+          </div>
         </div>
 
         <!-- Row 1: Yield (full width) -->
@@ -560,9 +580,17 @@ const stateDetailHoveredYear = ref(null);
 }
 
 .dashboard-wrapper {
+  --ink: #18332b;
+  --muted: #5f6f68;
+  --paper: #f5f2e9;
+  --paper-deep: #e9e3d3;
+  --card: #fffdf7;
+  --corn: #e3aa35;
+  --leaf: #2f6b4f;
+  --line: #c9c4b6;
   min-height: 100vh;
-  background: #f4f2ec;
-  color: #1e293b;
+  background: var(--paper);
+  color: var(--ink);
 }
 
 /* Sticky Navbar */
@@ -570,46 +598,46 @@ const stateDetailHoveredYear = ref(null);
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-  border-bottom: 2px solid #2f6b4f;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
+  background: rgba(24, 51, 43, 0.98);
+  border-bottom: 3px solid var(--corn);
+  box-shadow: 0 8px 24px rgba(24, 51, 43, 0.16);
+  backdrop-filter: blur(14px);
 }
 
 .navbar-content {
-  max-width: 1400px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
+  padding: 0.85rem 2rem;
+  display: grid;
+  grid-template-columns: minmax(250px, 0.72fr) minmax(0, 1.65fr);
   align-items: center;
-  gap: 2rem;
+  gap: 2.5rem;
 }
 
 .navbar-left {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .back-button {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.6rem 1.2rem;
+  padding: 0.55rem 0.8rem;
   background: transparent;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  color: #475569;
+  border: 1px solid rgba(245, 242, 233, 0.35);
+  border-radius: 3px;
+  color: var(--paper);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .back-button:hover {
-  background: #f1f5f9;
-  border-color: #3b82f6;
-  color: #3b82f6;
+  background: rgba(245, 242, 233, 0.1);
+  border-color: var(--corn);
+  color: #f0c661;
 }
 
 .year-group {
@@ -624,13 +652,13 @@ const stateDetailHoveredYear = ref(null);
   gap: 0.25rem;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--paper-deep);
 }
 
 .year-mini-hint {
   font-size: 0.75rem;
   font-weight: 500;
-  color: #94a3b8;
+  color: #b8c7c1;
 }
 
 .year-range {
@@ -642,20 +670,20 @@ const stateDetailHoveredYear = ref(null);
 .year-select {
   min-width: 90px;
   padding: 0.45rem 0.75rem;
-  background: #ffffff;
-  color: #1e293b;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid transparent;
+  border-radius: 3px;
   font-size: 0.9rem;
   cursor: pointer;
 }
 
 .year-select:hover {
-  border-color: #3b82f6;
+  border-color: var(--corn);
 }
 
 .year-separator {
-  color: #64748b;
+  color: var(--paper-deep);
   font-weight: 600;
 }
 
@@ -664,13 +692,12 @@ const stateDetailHoveredYear = ref(null);
 }
 
 .navbar-title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  color: var(--paper);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.45rem;
+  font-weight: 500;
+  line-height: 1.05;
   margin: 0;
-  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 /* .live-badge {
@@ -687,7 +714,8 @@ const stateDetailHoveredYear = ref(null);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  justify-content: flex-end;
+  gap: 1rem;
 }
 
 .control-group {
@@ -700,43 +728,43 @@ const stateDetailHoveredYear = ref(null);
 .control-label {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--paper-deep);
 }
 
 .state-selector {
-  min-width: 200px;
-  padding: 0.6rem 1rem;
-  background: #ffffff;
-  color: #1e293b;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
+  min-width: 178px;
+  padding: 0.58rem 0.8rem;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid transparent;
+  border-radius: 3px;
   font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .state-selector:hover {
-  border-color: #3b82f6;
+  border-color: var(--corn);
 }
 
 .state-selector:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--corn);
+  box-shadow: 0 0 0 3px rgba(227, 170, 53, 0.22);
 }
 
 .temp-toggle {
   display: flex;
-  background: #f1f5f9;
-  border-radius: 6px;
+  background: var(--paper-deep);
+  border-radius: 3px;
   overflow: hidden;
-  border: 1px solid #cbd5e1;
+  border: 1px solid transparent;
 }
 
 .toggle-btn {
   padding: 0.6rem 1rem;
   background: transparent;
-  color: #475569;
+  color: var(--ink);
   border: none;
   cursor: pointer;
   font-weight: 600;
@@ -744,35 +772,36 @@ const stateDetailHoveredYear = ref(null);
 }
 
 .toggle-btn.active {
-  background: #3b82f6;
-  color: white;
+  background: var(--corn);
+  color: var(--ink);
 }
 
 .toggle-btn:hover:not(.active) {
-  background: #e2e8f0;
+  background: #d9d2bf;
 }
 
 .reset-button {
   padding: 0.6rem 1.2rem;
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  color: white;
-  border: none;
-  border-radius: 6px;
+  background: transparent;
+  color: #f0c661;
+  border: 1px solid rgba(227, 170, 53, 0.7);
+  border-radius: 3px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .reset-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  background: var(--corn);
+  color: var(--ink);
+  box-shadow: none;
 }
 
 /* Dashboard Container */
 .dashboard-container {
-  max-width: 1400px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 2.5rem 2rem 0;
 }
 
 .dashboard-status {
@@ -782,11 +811,11 @@ const stateDetailHoveredYear = ref(null);
   gap: 0.5rem;
   padding: 2rem;
   text-align: center;
-  color: #475569;
+  color: var(--muted);
 }
 
 .dashboard-status strong {
-  color: #18332b;
+  color: var(--ink);
   font-size: 1.4rem;
 }
 
@@ -798,20 +827,20 @@ const stateDetailHoveredYear = ref(null);
   justify-self: center;
   margin-top: 1rem;
   padding: 0.65rem 1rem;
-  background: #18332b;
+  background: var(--ink);
   color: white;
-  border-radius: 6px;
+  border-radius: 3px;
 }
 
 .analysis-intro {
   display: grid;
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
   gap: 4rem;
-  padding: 2.5rem;
-  margin-bottom: 4rem;
-  background: #18332b;
-  color: white;
-  border-top: 5px solid #e3aa35;
+  padding: clamp(2rem, 5vw, 4rem);
+  margin-bottom: 5rem;
+  background: var(--ink);
+  color: var(--paper);
+  border-top: 5px solid var(--corn);
 }
 
 .analysis-intro h2 {
@@ -846,71 +875,78 @@ const stateDetailHoveredYear = ref(null);
 }
 
 .section-kicker {
-  color: #2f6b4f;
+  color: var(--leaf);
+  padding-top: 0.4rem;
 }
 
 /* Sections */
 .section {
-  margin-bottom: 4rem;
+  margin-bottom: 5.5rem;
   scroll-margin-top: 9rem;
 }
 
 .section-header {
-  text-align: center;
-  margin-bottom: 2rem;
+  display: grid;
+  grid-template-columns: minmax(150px, 0.32fr) minmax(0, 1fr);
+  gap: 2rem;
+  text-align: left;
+  margin-bottom: 2.25rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--line);
 }
 
 .section-header h2 {
-  font-size: 2rem;
-  font-weight: 700;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 500;
+  line-height: 1.05;
   margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .section-subtitle {
   font-size: 1rem;
-  color: #64748b;
+  color: var(--muted);
+  line-height: 1.55;
 }
 
 /* Grid */
 .row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 /* Cards */
 .chart-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border-radius: 16px;
+  background: var(--card);
+  border-radius: 4px;
   padding: 1.5rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  transition: all 0.3s ease;
+  box-shadow: 0 12px 30px rgba(24, 51, 43, 0.06);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--leaf);
 }
 
 .chart-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 16px 36px rgba(24, 51, 43, 0.09);
 }
 
 .chart-card h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.35rem;
+  font-weight: 500;
   margin-bottom: 1rem;
-  color: #1e293b;
+  color: var(--ink);
 }
 
 /* Map Container - LARGER */
 .map-container-large {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border-radius: 16px;
+  background: var(--card);
+  border-radius: 4px;
   padding: 1.5rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 12px 30px rgba(24, 51, 43, 0.06);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--corn);
   min-height: 450px;
   max-height: 500px;
   overflow: hidden;
@@ -921,24 +957,22 @@ const stateDetailHoveredYear = ref(null);
 
 /* Scatter Container */
 .scatter-container {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border-radius: 16px;
+  background: var(--card);
+  border-radius: 4px;
   padding: 2rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 12px 30px rgba(24, 51, 43, 0.06);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--leaf);
 }
 
 /* State Detail Section */
 .state-detail-section {
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.05) 0%,
-    rgba(167, 139, 250, 0.05) 100%
-  );
-  border-radius: 20px;
+  background: var(--paper-deep);
+  border-radius: 4px;
   padding: 2rem;
-  margin-bottom: 2rem;
-  border: 2px solid rgba(59, 130, 246, 0.3);
+  margin-bottom: 4rem;
+  border: 1px solid var(--line);
+  border-top: 5px solid var(--corn);
   animation: slideIn 0.5s ease;
 }
 
@@ -956,10 +990,10 @@ const stateDetailHoveredYear = ref(null);
 /* Footer */
 .dashboard-footer {
   margin-top: 4rem;
-  padding: 2rem;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-  border-top: 2px solid #3b82f6;
-  border-radius: 16px 16px 0 0;
+  padding: 2.5rem;
+  background: var(--ink);
+  border-top: 4px solid var(--corn);
+  border-radius: 0;
 }
 
 .footer-content {
@@ -972,33 +1006,44 @@ const stateDetailHoveredYear = ref(null);
   font-size: 1.1rem;
   font-weight: 700;
   margin-bottom: 0.75rem;
-  color: #2563eb;
+  color: #e9c779;
 }
 
 .footer-section p {
   font-size: 0.9rem;
-  color: #475569;
+  color: #c7d2ce;
   margin-bottom: 0.5rem;
 }
 
 .footer-section a {
-  color: #1d4f3c;
+  color: var(--paper);
   text-underline-offset: 0.2rem;
 }
 
 button:focus-visible,
 select:focus-visible,
 a:focus-visible {
-  outline: 3px solid #e3aa35;
+  outline: 3px solid var(--corn);
   outline-offset: 3px;
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-  .navbar-content {
-    flex-direction: column;
-    gap: 1rem;
+@media (max-width: 1050px) {
+  .sticky-navbar {
+    position: relative;
   }
+
+  .navbar-content {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .navbar-controls {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
 
   .row {
     grid-template-columns: 1fr;
@@ -1011,17 +1056,33 @@ a:focus-visible {
   }
 
   .navbar-left {
-    justify-content: space-between;
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .navbar-controls {
-    justify-content: center;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .control-group {
+    justify-content: space-between;
+  }
+
+  .state-selector {
+    min-width: 0;
+    width: 58%;
   }
 
   .analysis-intro {
     grid-template-columns: 1fr;
     gap: 1.5rem;
     padding: 1.5rem;
+  }
+
+  .section-header {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
   }
 
   .dashboard-container {
@@ -1044,14 +1105,14 @@ a:focus-visible {
 .year-hint {
   margin-top: 0.25rem;
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--muted);
 }
 
 .year-select {
   padding: 0.4rem 0.75rem;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  background: var(--paper);
   font-size: 0.9rem;
   min-width: 80px;
   cursor: pointer;
@@ -1059,13 +1120,13 @@ a:focus-visible {
 
 .year-select:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  border-color: var(--corn);
+  box-shadow: 0 0 0 3px rgba(227, 170, 53, 0.2);
 }
 
 .year-separator {
   font-size: 0.9rem;
-  color: #64748b;
+  color: var(--paper-deep);
   font-weight: 600;
 }
 </style>
