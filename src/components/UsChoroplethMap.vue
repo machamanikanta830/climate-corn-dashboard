@@ -18,6 +18,25 @@ const margin = { top: 10, right: 10, bottom: 60, left: 10 };
 
 const usStates = ref(null);
 
+function positionTooltip(event, tooltip) {
+  const containerRect = containerRef.value.getBoundingClientRect();
+  const tooltipNode = tooltip.node();
+  const padding = 12;
+  const pointerX = event.clientX - containerRect.left;
+  const pointerY = event.clientY - containerRect.top;
+  const tooltipWidth = tooltipNode?.offsetWidth || 220;
+  const tooltipHeight = tooltipNode?.offsetHeight || 110;
+
+  const left = Math.min(
+    Math.max(padding, pointerX + 16),
+    Math.max(padding, containerRect.width - tooltipWidth - padding)
+  );
+  const preferredTop = pointerY - tooltipHeight - 14;
+  const top = preferredTop >= padding ? preferredTop : pointerY + 16;
+
+  tooltip.style("left", `${left}px`).style("top", `${top}px`);
+}
+
 const stateNames = {
   "01": "ALABAMA",
   "02": "ALASKA",
@@ -153,6 +172,7 @@ function render() {
     .style("font-size", "13px")
     .style("pointer-events", "none")
     .style("opacity", 0)
+    .style("visibility", "hidden")
     .style("z-index", 10000)
     .style("box-shadow", "0 6px 16px rgba(0, 0, 0, 0.2)")
     .style("border", "1px solid #c9c4b6")
@@ -204,11 +224,10 @@ function render() {
 
       d3.select(this).attr("stroke", "#18332b").attr("stroke-width", 2);
 
-      const containerRect = containerRef.value.getBoundingClientRect();
-
       if (!data) {
         tooltip
           .style("opacity", 1)
+          .style("visibility", "visible")
           .html(
             `
         <div style="font-weight: 700; margin-bottom: 6px; border-bottom: 2px solid #e3aa35; padding-bottom: 4px;">
@@ -216,9 +235,9 @@ function render() {
         </div>
         <div>No corn yield data available for this state.</div>
       `
-          )
-          .style("left", event.clientX - containerRect.left + 15 + "px")
-          .style("top", event.clientY - containerRect.top - 10 + "px");
+          );
+
+        positionTooltip(event, tooltip);
 
         emit("hover-state", stateName);
         return;
@@ -226,6 +245,7 @@ function render() {
 
       tooltip
         .style("opacity", 1)
+        .style("visibility", "visible")
         .html(
           `
       <div style="font-weight: 700; margin-bottom: 6px; border-bottom: 2px solid #e3aa35; padding-bottom: 4px;">
@@ -241,17 +261,14 @@ function render() {
         1
       )} in</strong></div>
     `
-        )
-        .style("left", event.clientX - containerRect.left + 15 + "px")
-        .style("top", event.clientY - containerRect.top - 10 + "px");
+        );
+
+      positionTooltip(event, tooltip);
 
       emit("hover-state", stateName);
     })
     .on("mousemove", function (event) {
-      const containerRect = containerRef.value.getBoundingClientRect();
-      tooltip
-        .style("left", event.clientX - containerRect.left + 15 + "px")
-        .style("top", event.clientY - containerRect.top - 10 + "px");
+      positionTooltip(event, tooltip);
     })
     .on("mouseleave", function (event, d) {
       const stateName = stateNames[d.id];
@@ -260,7 +277,7 @@ function render() {
         d3.select(this).attr("stroke", "#fffdf7").attr("stroke-width", 0.5);
       }
 
-      tooltip.style("opacity", 0);
+      tooltip.style("opacity", 0).style("visibility", "hidden");
       emit("hover-state", null);
     })
     .on("click", function (event, d) {
@@ -335,7 +352,6 @@ watch(
   [
     () => props.data,
     () => props.selectedState,
-    () => props.hoveredState,
     () => props.tempMetric,
     colorBy,
   ],
