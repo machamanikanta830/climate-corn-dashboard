@@ -74,8 +74,8 @@ function render() {
     .attr("y2", "100%")
     .selectAll("stop")
     .data([
-      { o: "0%", c: "#3b82f6", a: 0.6 },
-      { o: "100%", c: "#3b82f6", a: 0.1 },
+      { o: "0%", c: "#4f7475", a: 0.55 },
+      { o: "100%", c: "#4f7475", a: 0.08 },
     ])
     .join("stop")
     .attr("offset", (d) => d.o)
@@ -103,7 +103,7 @@ function render() {
   g.append("path")
     .datum(aggregatedData.value)
     .attr("fill", "none")
-    .attr("stroke", "#2563eb")
+    .attr("stroke", "#4f7475")
     .attr("stroke-width", 3)
     .attr("d", line);
 
@@ -112,7 +112,7 @@ function render() {
     .attr("class", "chart-tooltip")
     .style("position", "absolute")
     .style("background", "rgba(255,255,255,0.98)")
-    .style("color", "#1e293b")
+    .style("color", "#18332b")
     .style("padding", "10px 14px")
     .style("border-radius", "8px")
     .style("font-size", "12px")
@@ -129,8 +129,8 @@ function render() {
     .attr("cx", (d) => x(d.year))
     .attr("cy", (d) => y(d.avgPrecip))
     .attr("r", (d) => (props.hoveredYear === d.year ? 8 : 5))
-    .attr("fill", "#2563eb")
-    .attr("stroke", "#fff")
+    .attr("fill", "#4f7475")
+    .attr("stroke", "#fffdf7")
     .attr("stroke-width", 2)
     .style("cursor", "pointer")
     .on("mouseenter", function (event, d) {
@@ -146,10 +146,10 @@ function render() {
           <div>Precipitation: <strong>${d.avgPrecip.toFixed(
             2
           )} in</strong></div>
-          <div style="color:#16a34a;margin-top:4px;">Yield: <strong>${d.avgYield.toFixed(
+          <div style="color:#2f6b4f;margin-top:4px;">Yield: <strong>${d.avgYield.toFixed(
             1
           )} bu/acre</strong></div>
-          <div style="color:#f97316;margin-top:2px;">Temp: <strong>${d.avgTemp.toFixed(
+          <div style="color:#b7653b;margin-top:2px;">Temp: <strong>${d.avgTemp.toFixed(
             1
           )}°${props.tempMetric}</strong></div>
         `
@@ -176,13 +176,13 @@ function render() {
   g.append("g")
     .attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(x).tickFormat(d3.format("d")))
-    .attr("color", "#94a3b8")
+    .attr("color", "#8e9b95")
     .selectAll("text")
     .attr("font-size", 12);
 
   g.append("g")
     .call(d3.axisLeft(y).ticks(5))
-    .attr("color", "#94a3b8")
+    .attr("color", "#8e9b95")
     .selectAll("text")
     .attr("font-size", 12);
 
@@ -190,7 +190,7 @@ function render() {
     .attr("x", width / 2)
     .attr("y", height + 40)
     .attr("text-anchor", "middle")
-    .attr("fill", "#475569")
+    .attr("fill", "#5f6f68")
     .attr("font-size", 14)
     .text("Year");
 
@@ -199,7 +199,7 @@ function render() {
     .attr("x", -height / 2)
     .attr("y", -45)
     .attr("text-anchor", "middle")
-    .attr("fill", "#475569")
+    .attr("fill", "#5f6f68")
     .attr("font-size", 14)
     .text("Precipitation (inches)");
 }

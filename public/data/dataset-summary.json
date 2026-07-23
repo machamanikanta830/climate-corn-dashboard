@@ -1,0 +1,19 @@
+{
+  "coverage": {
+    "observations": 1025,
+    "states": 41,
+    "startYear": 2000,
+    "endYear": 2024
+  },
+  "pooledCorrelations": {
+    "temperatureYield": -0.171,
+    "precipitationYield": -0.04,
+    "temperaturePrecipitation": 0.54
+  },
+  "nationalStateAverageChange": {
+    "temperatureF": 2.36,
+    "precipitationInches": 5.48,
+    "yieldBuPerAcre": 28.0
+  },
+  "methodNote": "Correlations pool state-year observations and are descriptive associations, not causal estimates. Changes compare state averages in the first and last years."
+}

@@ -69,8 +69,8 @@ function render() {
     .attr("y2", "100%")
     .selectAll("stop")
     .data([
-      { o: "0%", c: "#ef4444", a: 0.6 },
-      { o: "100%", c: "#ef4444", a: 0.1 },
+      { o: "0%", c: "#b7653b", a: 0.55 },
+      { o: "100%", c: "#b7653b", a: 0.08 },
     ])
     .join("stop")
     .attr("offset", (d) => d.o)
@@ -98,7 +98,7 @@ function render() {
   g.append("path")
     .datum(aggregatedData.value)
     .attr("fill", "none")
-    .attr("stroke", "#ef4444")
+    .attr("stroke", "#b7653b")
     .attr("stroke-width", 3)
     .attr("d", line);
 
@@ -106,18 +106,18 @@ function render() {
     .attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(x).tickFormat(d3.format("d")))
     .selectAll("text")
-    .attr("fill", "#475569");
+    .attr("fill", "#5f6f68");
 
-  g.append("g").call(d3.axisLeft(y)).selectAll("text").attr("fill", "#475569");
+  g.append("g").call(d3.axisLeft(y)).selectAll("text").attr("fill", "#5f6f68");
 
-  g.selectAll(".domain, .tick line").attr("stroke", "#cbd5e1");
+  g.selectAll(".domain, .tick line").attr("stroke", "#c9c4b6");
 
   g.append("text")
     .attr("transform", "rotate(-90)")
     .attr("y", -45)
     .attr("x", -height / 2)
     .attr("text-anchor", "middle")
-    .attr("fill", "#1e293b")
+    .attr("fill", "#18332b")
     .attr("font-size", "12px")
     .attr("font-weight", "600")
     .text(`Temperature (°${props.tempMetric})`);
@@ -127,7 +127,7 @@ function render() {
     .attr("class", "chart-tooltip")
     .style("position", "absolute")
     .style("background", "rgba(255,255,255,0.98)")
-    .style("color", "#1e293b")
+    .style("color", "#18332b")
     .style("padding", "8px 12px")
     .style("border-radius", "8px")
     .style("font-size", "12px")
@@ -144,8 +144,8 @@ function render() {
     .attr("cx", (d) => x(d.year))
     .attr("cy", (d) => y(d.avgTemp))
     .attr("r", (d) => (props.hoveredYear === d.year ? 8 : 5))
-    .attr("fill", "#ef4444")
-    .attr("stroke", "#fff")
+    .attr("fill", "#b7653b")
+    .attr("stroke", "#fffdf7")
     .attr("stroke-width", 2)
     .style("cursor", "pointer")
     .on("mouseenter", function (event, d) {
@@ -157,16 +157,16 @@ function render() {
         .style("opacity", 1)
         .html(
           `
-    <div style="font-weight:600;color:#ef4444;margin-bottom:4px;">Year: ${
+    <div style="font-weight:600;color:#b7653b;margin-bottom:4px;">Year: ${
       d.year
     }</div>
     <div>Temp: <strong>${d.avgTemp.toFixed(1)}°${
             props.tempMetric
           }</strong></div>
-    <div style="color:#16a34a;margin-top:4px;">Yield: <strong>${d.avgYield.toFixed(
+    <div style="color:#2f6b4f;margin-top:4px;">Yield: <strong>${d.avgYield.toFixed(
       1
     )} bu/acre</strong></div>
-    <div style="color:#0ea5e9;margin-top:4px;">Precip: <strong>${d.avgPrecip.toFixed(
+    <div style="color:#4f7475;margin-top:4px;">Precip: <strong>${d.avgPrecip.toFixed(
       2
     )} in</strong></div>
   `

@@ -68,15 +68,15 @@ function render() {
   let valueAccessor, color, unit;
   if (rankBy.value === "Yield") {
     valueAccessor = (d) => d.yield;
-    color = "#3b82f6";
+    color = "#2f6b4f";
     unit = "bu/acre";
   } else if (rankBy.value === "Temp") {
     valueAccessor = (d) => d.temp;
-    color = "#ef4444";
+    color = "#b7653b";
     unit = `°${props.tempMetric}`;
   } else {
     valueAccessor = (d) => d.precip;
-    color = "#10b981";
+    color = "#4f7475";
     unit = "inches";
   }
 
@@ -89,7 +89,7 @@ function render() {
     .attr("x", innerWidth / 2)
     .attr("y", -5)
     .attr("text-anchor", "middle")
-    .attr("fill", "#10b981")
+    .attr("fill", "#e3aa35")
     .attr("font-size", "16px")
     .attr("font-weight", "700")
     .text(`Top 10 - Highest ${rankBy.value}`);
@@ -119,7 +119,7 @@ function render() {
       props.selectedState !== "ALL" && d.state === props.selectedState ? 1 : 0.7
     )
     .attr("stroke", (d) =>
-      props.selectedState === d.state ? "#ef4444" : "none"
+      props.selectedState === d.state ? "#e3aa35" : "none"
     )
     .attr("stroke-width", 3)
     .attr("cursor", "pointer")
@@ -148,7 +148,7 @@ function render() {
     .attr("y", (d) => yTop(d.state) + yTop.bandwidth() / 2)
     .attr("text-anchor", "end")
     .attr("alignment-baseline", "middle")
-    .attr("fill", "#1e293b")
+    .attr("fill", "#18332b")
     .attr("font-size", "12px")
     .attr("font-weight", "600")
     .text((d) => d.state);
@@ -168,7 +168,7 @@ function render() {
       return w > innerWidth * 0.8 ? "end" : "start";
     })
     .attr("alignment-baseline", "middle")
-    .attr("fill", "#1e293b")
+    .attr("fill", "#18332b")
     .attr("font-size", "11px")
     .attr("font-weight", "600")
     .text((d) => valueAccessor(d).toFixed(1) + " " + unit);
@@ -185,7 +185,7 @@ function render() {
     .attr("x", innerWidth / 2)
     .attr("y", -5)
     .attr("text-anchor", "middle")
-    .attr("fill", "#ef4444")
+    .attr("fill", "#b7653b")
     .attr("font-size", "16px")
     .attr("font-weight", "700")
     .text(`Bottom 10 - Lowest ${rankBy.value}`);
@@ -215,7 +215,7 @@ function render() {
       props.selectedState !== "ALL" && d.state === props.selectedState ? 1 : 0.7
     )
     .attr("stroke", (d) =>
-      props.selectedState === d.state ? "#ef4444" : "none"
+      props.selectedState === d.state ? "#e3aa35" : "none"
     )
     .attr("stroke-width", 3)
     .attr("cursor", "pointer")
@@ -244,7 +244,7 @@ function render() {
     .attr("y", (d) => yBottom(d.state) + yBottom.bandwidth() / 2)
     .attr("text-anchor", "end")
     .attr("alignment-baseline", "middle")
-    .attr("fill", "#1e293b")
+    .attr("fill", "#18332b")
     .attr("font-size", "12px")
     .attr("font-weight", "600")
     .text((d) => d.state);
@@ -264,7 +264,7 @@ function render() {
       return w > innerWidth * 0.8 ? "end" : "start";
     })
     .attr("alignment-baseline", "middle")
-    .attr("fill", "#1e293b")
+    .attr("fill", "#18332b")
     .attr("font-size", "11px")
     .attr("font-weight", "600")
     .text((d) => valueAccessor(d).toFixed(1) + " " + unit);
@@ -296,7 +296,7 @@ onMounted(render);
         "
       >
         <input type="radio" v-model="rankBy" value="Yield" name="rankBy" />
-        <span style="color: #3b82f6">Yield</span>
+        <span style="color: #2f6b4f">Yield</span>
       </label>
       <label
         style="
@@ -308,7 +308,7 @@ onMounted(render);
         "
       >
         <input type="radio" v-model="rankBy" value="Temp" name="rankBy" />
-        <span style="color: #ef4444">Temperature</span>
+        <span style="color: #b7653b">Temperature</span>
       </label>
       <label
         style="
@@ -320,7 +320,7 @@ onMounted(render);
         "
       >
         <input type="radio" v-model="rankBy" value="Precip" name="rankBy" />
-        <span style="color: #10b981">Precipitation</span>
+        <span style="color: #4f7475">Precipitation</span>
       </label>
     </div>
     <div ref="containerRef" style="position: relative; width: 100%"></div>

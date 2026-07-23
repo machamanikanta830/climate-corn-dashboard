@@ -33,8 +33,8 @@ function goToLanding() {
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
-  background: #ffffff;
-  color: #1e293b;
+  background: #f5f2e9;
+  color: #18332b;
   overflow-x: hidden;
 }
 
@@ -59,53 +59,54 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f8fafc;
+  background: #e9e3d3;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: #527463;
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #2f6b4f;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
+  scrollbar-color: #527463 #e9e3d3;
 }
 
 .tooltip,
 .chart-tooltip {
   position: absolute;
-  background: rgba(255, 255, 255, 0.98);
-  color: #1e293b;
+  background: rgba(255, 253, 247, 0.98);
+  color: #18332b;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 3px;
   font-size: 12px;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s;
   z-index: 1000;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border: 1px solid #c9c4b6;
+  border-top: 3px solid #e3aa35;
   backdrop-filter: blur(10px);
 }
 
 .chart-box {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border-radius: 12px;
+  background: #fffdf7;
+  border-radius: 4px;
   padding: 1.5rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  border: 1px solid #c9c4b6;
 }
 
 .chart-box h3 {
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: #1e293b;
+  color: #18332b;
 }
 
 .grid {

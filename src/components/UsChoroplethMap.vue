@@ -18,6 +18,25 @@ const margin = { top: 10, right: 10, bottom: 60, left: 10 };
 
 const usStates = ref(null);
 
+function positionTooltip(event, tooltip) {
+  const containerRect = containerRef.value.getBoundingClientRect();
+  const tooltipNode = tooltip.node();
+  const padding = 12;
+  const pointerX = event.clientX - containerRect.left;
+  const pointerY = event.clientY - containerRect.top;
+  const tooltipWidth = tooltipNode?.offsetWidth || 220;
+  const tooltipHeight = tooltipNode?.offsetHeight || 110;
+
+  const left = Math.min(
+    Math.max(padding, pointerX + 16),
+    Math.max(padding, containerRect.width - tooltipWidth - padding)
+  );
+  const preferredTop = pointerY - tooltipHeight - 14;
+  const top = preferredTop >= padding ? preferredTop : pointerY + 16;
+
+  tooltip.style("left", `${left}px`).style("top", `${top}px`);
+}
+
 const stateNames = {
   "01": "ALABAMA",
   "02": "ALASKA",
@@ -107,28 +126,25 @@ function render() {
     (d) => d.State
   );
 
-  let colorScale, values, unit, label;
+  let colorScale, values, label;
 
   if (colorBy.value === "Yield") {
     values = Array.from(stateData.values()).map((d) => d.yield);
     colorScale = d3
-      .scaleSequential(d3.interpolateBlues)
+      .scaleSequential(d3.interpolateRgb("#efe9da", "#2f6b4f"))
       .domain(d3.extent(values));
-    unit = "bu/acre";
     label = "Average Corn Yield (bu/acre)";
   } else if (colorBy.value === "Temp") {
     values = Array.from(stateData.values()).map((d) => d.temp);
     colorScale = d3
-      .scaleSequential(d3.interpolateReds)
+      .scaleSequential(d3.interpolateRgb("#f4e7df", "#b7653b"))
       .domain(d3.extent(values));
-    unit = `°${props.tempMetric}`;
     label = `Average Temperature (°${props.tempMetric})`;
   } else {
     values = Array.from(stateData.values()).map((d) => d.precip);
     colorScale = d3
-      .scaleSequential(d3.interpolateGreens)
+      .scaleSequential(d3.interpolateRgb("#e4ece8", "#4f7475"))
       .domain(d3.extent(values));
-    unit = "inches";
     label = "Average Precipitation (inches)";
   }
 
@@ -149,16 +165,18 @@ function render() {
     .append("div")
     .attr("class", "map-tooltip")
     .style("position", "absolute")
-    .style("background", "rgba(255, 255, 255, 0.98)")
-    .style("color", "#1e293b")
+    .style("background", "rgba(255, 253, 247, 0.98)")
+    .style("color", "#18332b")
     .style("padding", "10px 14px")
-    .style("border-radius", "8px")
+    .style("border-radius", "3px")
     .style("font-size", "13px")
     .style("pointer-events", "none")
     .style("opacity", 0)
+    .style("visibility", "hidden")
     .style("z-index", 10000)
     .style("box-shadow", "0 6px 16px rgba(0, 0, 0, 0.2)")
-    .style("border", "2px solid rgba(59, 130, 246, 0.5)")
+    .style("border", "1px solid #c9c4b6")
+    .style("border-top", "3px solid #e3aa35")
     .style("font-weight", "500");
 
   g.selectAll("path")
@@ -168,7 +186,7 @@ function render() {
     .attr("fill", (d) => {
       const stateName = stateNames[d.id];
       const data = stateData.get(stateName);
-      if (!data) return "#e5e7eb";
+      if (!data) return "#e9e3d3";
 
       if (colorBy.value === "Yield") return colorScale(data.yield);
       if (colorBy.value === "Temp") return colorScale(data.temp);
@@ -178,12 +196,12 @@ function render() {
       const stateName = stateNames[d.id];
 
       if (props.selectedState !== "ALL" && stateName === props.selectedState) {
-        return "#ef4444";
+        return "#e3aa35";
       }
       if (props.hoveredState && stateName === props.hoveredState) {
-        return "#3b82f6";
+        return "#18332b";
       }
-      return "#fff";
+      return "#fffdf7";
     })
     .attr("stroke-width", (d) => {
       const stateName = stateNames[d.id];
@@ -204,23 +222,22 @@ function render() {
 
       const data = stateData.get(stateName);
 
-      d3.select(this).attr("stroke", "#3b82f6").attr("stroke-width", 2);
-
-      const containerRect = containerRef.value.getBoundingClientRect();
+      d3.select(this).attr("stroke", "#18332b").attr("stroke-width", 2);
 
       if (!data) {
         tooltip
           .style("opacity", 1)
+          .style("visibility", "visible")
           .html(
             `
-        <div style="font-weight: 700; margin-bottom: 6px; border-bottom: 2px solid #3b82f6; padding-bottom: 4px;">
+        <div style="font-weight: 700; margin-bottom: 6px; border-bottom: 2px solid #e3aa35; padding-bottom: 4px;">
           ${stateName}
         </div>
         <div>No corn yield data available for this state.</div>
       `
-          )
-          .style("left", event.clientX - containerRect.left + 15 + "px")
-          .style("top", event.clientY - containerRect.top - 10 + "px");
+          );
+
+        positionTooltip(event, tooltip);
 
         emit("hover-state", stateName);
         return;
@@ -228,9 +245,10 @@ function render() {
 
       tooltip
         .style("opacity", 1)
+        .style("visibility", "visible")
         .html(
           `
-      <div style="font-weight: 700; margin-bottom: 6px; border-bottom: 2px solid #3b82f6; padding-bottom: 4px;">
+      <div style="font-weight: 700; margin-bottom: 6px; border-bottom: 2px solid #e3aa35; padding-bottom: 4px;">
         ${stateName}
       </div>
       <div style="margin: 4px 0;">Avg Yield: <strong>${data.yield.toFixed(
@@ -243,26 +261,23 @@ function render() {
         1
       )} in</strong></div>
     `
-        )
-        .style("left", event.clientX - containerRect.left + 15 + "px")
-        .style("top", event.clientY - containerRect.top - 10 + "px");
+        );
+
+      positionTooltip(event, tooltip);
 
       emit("hover-state", stateName);
     })
     .on("mousemove", function (event) {
-      const containerRect = containerRef.value.getBoundingClientRect();
-      tooltip
-        .style("left", event.clientX - containerRect.left + 15 + "px")
-        .style("top", event.clientY - containerRect.top - 10 + "px");
+      positionTooltip(event, tooltip);
     })
     .on("mouseleave", function (event, d) {
       const stateName = stateNames[d.id];
 
       if (props.selectedState !== stateName) {
-        d3.select(this).attr("stroke", "#fff").attr("stroke-width", 0.5);
+        d3.select(this).attr("stroke", "#fffdf7").attr("stroke-width", 0.5);
       }
 
-      tooltip.style("opacity", 0);
+      tooltip.style("opacity", 0).style("visibility", "hidden");
       emit("hover-state", null);
     })
     .on("click", function (event, d) {
@@ -317,17 +332,17 @@ function render() {
     .attr("transform", `translate(0,${legendHeight})`)
     .call(legendAxis)
     .selectAll("text")
-    .attr("fill", "#475569")
+    .attr("fill", "#5f6f68")
     .attr("font-size", "11px");
 
-  legendGroup.selectAll(".domain, .tick line").attr("stroke", "#cbd5e1");
+  legendGroup.selectAll(".domain, .tick line").attr("stroke", "#c9c4b6");
 
   legendGroup
     .append("text")
     .attr("x", legendWidth / 2)
     .attr("y", -5)
     .attr("text-anchor", "middle")
-    .attr("fill", "#1e293b")
+    .attr("fill", "#18332b")
     .attr("font-size", "12px")
     .attr("font-weight", "600")
     .text(label);
@@ -337,7 +352,6 @@ watch(
   [
     () => props.data,
     () => props.selectedState,
-    () => props.hoveredState,
     () => props.tempMetric,
     colorBy,
   ],
@@ -357,24 +371,8 @@ onMounted(async () => {
 <template>
   <div>
     <!-- Color By Options -->
-    <div
-      style="
-        display: flex;
-        justify-content: center;
-        gap: 2rem;
-        margin-bottom: 1rem;
-      "
-    >
-      <label
-        style="
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          cursor: pointer;
-          font-weight: 600;
-          color: #475569;
-        "
-      >
+    <div class="map-metric-controls" role="radiogroup" aria-label="Map color metric">
+      <label class="map-metric-option">
         <input
           type="radio"
           v-model="colorBy"
@@ -382,18 +380,9 @@ onMounted(async () => {
           name="mapColor"
           style="cursor: pointer"
         />
-        <span style="color: #2563eb">Yield</span>
+        <span class="yield-label">Yield</span>
       </label>
-      <label
-        style="
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          cursor: pointer;
-          font-weight: 600;
-          color: #475569;
-        "
-      >
+      <label class="map-metric-option">
         <input
           type="radio"
           v-model="colorBy"
@@ -401,18 +390,9 @@ onMounted(async () => {
           name="mapColor"
           style="cursor: pointer"
         />
-        <span style="color: #ef4444">Temperature</span>
+        <span class="temperature-label">Temperature</span>
       </label>
-      <label
-        style="
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          cursor: pointer;
-          font-weight: 600;
-          color: #475569;
-        "
-      >
+      <label class="map-metric-option">
         <input
           type="radio"
           v-model="colorBy"
@@ -420,7 +400,7 @@ onMounted(async () => {
           name="mapColor"
           style="cursor: pointer"
         />
-        <span style="color: #10b981">Precipitation</span>
+        <span class="precipitation-label">Precipitation</span>
       </label>
     </div>
 
@@ -432,6 +412,36 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.map-metric-controls {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.map-metric-option {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.7rem;
+  background: #f5f2e9;
+  border: 1px solid #c9c4b6;
+  color: #5f6f68;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 650;
+}
+
+.map-metric-option:has(input:checked) {
+  border-color: #e3aa35;
+  background: #efe7d4;
+}
+
+.yield-label { color: #2f6b4f; }
+.temperature-label { color: #b7653b; }
+.precipitation-label { color: #4f7475; }
+
 .state-path {
   transition: stroke 0.2s, stroke-width 0.2s;
 }

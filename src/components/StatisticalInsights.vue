@@ -1,42 +1,15 @@
 <script setup>
-import { ref, computed, watch } from "vue";
+import { computed } from "vue";
+import {
+  linearRegression,
+  mean,
+  pearsonCorrelation,
+} from "../utils/statistics";
 
 const props = defineProps({
   data: { type: Array, required: true },
   tempMetric: { type: String, default: "C" },
-  selectedState: { type: String, default: "ALL" },
 });
-
-function pearsonCorrelation(x, y) {
-  const n = x.length;
-  if (n === 0) return 0;
-
-  const sumX = x.reduce((a, b) => a + b, 0);
-  const sumY = y.reduce((a, b) => a + b, 0);
-  const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
-  const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
-  const sumY2 = y.reduce((sum, yi) => sum + yi * yi, 0);
-
-  const numerator = n * sumXY - sumX * sumY;
-  const denominator = Math.sqrt(
-    (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY)
-  );
-
-  return denominator === 0 ? 0 : numerator / denominator;
-}
-
-function linearRegression(x, y) {
-  const n = x.length;
-  const sumX = x.reduce((a, b) => a + b, 0);
-  const sumY = y.reduce((a, b) => a + b, 0);
-  const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
-  const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
-
-  const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-  const intercept = (sumY - slope * sumX) / n;
-
-  return { slope, intercept };
-}
 
 const statistics = computed(() => {
   if (!props.data || props.data.length === 0) return null;
@@ -64,9 +37,9 @@ const statistics = computed(() => {
   const yieldChange = yieldTrend.slope * yearSpan;
   const precipChange = precipTrend.slope * yearSpan;
 
-  const avgTemp = temps.reduce((a, b) => a + b, 0) / temps.length;
-  const avgPrecip = precips.reduce((a, b) => a + b, 0) / precips.length;
-  const avgYield = yields.reduce((a, b) => a + b, 0) / yields.length;
+  const avgTemp = mean(temps);
+  const avgPrecip = mean(precips);
+  const avgYield = mean(yields);
 
   const minYear = Math.min(...years);
   const maxYear = Math.max(...years);
@@ -110,7 +83,7 @@ function getTrendDirection(slope) {
     <!-- Summary Cards -->
     <div class="summary-cards">
       <div class="stat-card">
-        <div class="stat-icon">🌡️</div>
+        <div class="stat-icon">Temp</div>
         <div class="stat-value">
           {{ statistics.avgTemp.toFixed(1) }}°{{ tempMetric }}
         </div>
@@ -118,19 +91,19 @@ function getTrendDirection(slope) {
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon">🌧️</div>
+        <div class="stat-icon">Rain</div>
         <div class="stat-value">{{ statistics.avgPrecip.toFixed(1) }}"</div>
         <div class="stat-label">Average Precipitation</div>
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon">🌽</div>
+        <div class="stat-icon">Yield</div>
         <div class="stat-value">{{ statistics.avgYield.toFixed(0) }}</div>
         <div class="stat-label">Average Yield (bu/acre)</div>
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon">📅</div>
+        <div class="stat-icon">Span</div>
         <div class="stat-value">{{ statistics.yearRange }}</div>
         <div class="stat-label">{{ statistics.dataPoints }} observations</div>
       </div>
@@ -138,7 +111,7 @@ function getTrendDirection(slope) {
 
     <!-- Correlations -->
     <div class="insights-section">
-      <h3 class="section-title">📊 Climate-Yield Correlations</h3>
+      <h3 class="section-title">Climate-Yield Correlations</h3>
       <div class="correlations-grid">
         <div
           class="correlation-item"
@@ -161,13 +134,9 @@ function getTrendDirection(slope) {
             {{ getCorrelationDirection(statistics.tempYieldCorr) }} relationship
           </div>
           <div class="corr-insight">
-            Higher temperatures are
-            {{
-              statistics.tempYieldCorr > 0
-                ? "associated with"
-                : "negatively correlated with"
-            }}
-            corn yield.
+            Temperature and corn yield move
+            {{ statistics.tempYieldCorr > 0 ? "together" : "in opposite directions" }}
+            in this filtered sample.
           </div>
         </div>
 
@@ -195,12 +164,9 @@ function getTrendDirection(slope) {
             relationship
           </div>
           <div class="corr-insight">
-            {{
-              statistics.precipYieldCorr > 0
-                ? "More rainfall supports"
-                : "Less rainfall is associated with"
-            }}
-            higher yields.
+            Precipitation and corn yield move
+            {{ statistics.precipYieldCorr > 0 ? "together" : "in opposite directions" }}
+            in this filtered sample.
           </div>
         </div>
 
@@ -241,11 +207,11 @@ function getTrendDirection(slope) {
     <!-- Trends -->
     <div class="insights-section">
       <h3 class="section-title">
-        📈 Long-term Trends ({{ statistics.yearRange }})
+        Long-term Trends ({{ statistics.yearRange }})
       </h3>
       <div class="trends-grid">
         <div class="trend-item">
-          <div class="trend-icon">🌡️</div>
+          <div class="trend-icon">Temp</div>
           <div class="trend-content">
             <div class="trend-title">Temperature Trend</div>
             <div
@@ -258,10 +224,10 @@ function getTrendDirection(slope) {
             <div class="trend-description">
               {{
                 getTrendDirection(statistics.tempChange) === "increasing"
-                  ? "⬆️ Rising"
+                  ? "Rising"
                   : getTrendDirection(statistics.tempChange) === "decreasing"
-                  ? "⬇️ Falling"
-                  : "➡️ Stable"
+                  ? "Falling"
+                  : "Stable"
               }}
               over
               {{
@@ -274,7 +240,7 @@ function getTrendDirection(slope) {
         </div>
 
         <div class="trend-item">
-          <div class="trend-icon">🌧️</div>
+          <div class="trend-icon">Rain</div>
           <div class="trend-content">
             <div class="trend-title">Precipitation Trend</div>
             <div
@@ -287,10 +253,10 @@ function getTrendDirection(slope) {
             <div class="trend-description">
               {{
                 getTrendDirection(statistics.precipChange) === "increasing"
-                  ? "⬆️ Rising"
+                  ? "Rising"
                   : getTrendDirection(statistics.precipChange) === "decreasing"
-                  ? "⬇️ Falling"
-                  : "➡️ Stable"
+                  ? "Falling"
+                  : "Stable"
               }}
               over
               {{
@@ -303,7 +269,7 @@ function getTrendDirection(slope) {
         </div>
 
         <div class="trend-item">
-          <div class="trend-icon">🌽</div>
+          <div class="trend-icon">Yield</div>
           <div class="trend-content">
             <div class="trend-title">Yield Trend</div>
             <div
@@ -316,10 +282,10 @@ function getTrendDirection(slope) {
             <div class="trend-description">
               {{
                 getTrendDirection(statistics.yieldChange) === "increasing"
-                  ? "⬆️ Rising"
+                  ? "Rising"
                   : getTrendDirection(statistics.yieldChange) === "decreasing"
-                  ? "⬇️ Falling"
-                  : "➡️ Stable"
+                  ? "Falling"
+                  : "Stable"
               }}
               over
               {{
@@ -335,7 +301,7 @@ function getTrendDirection(slope) {
 
     <!-- Key Insights -->
     <div class="insights-section">
-      <h3 class="section-title">💡 Key Findings</h3>
+      <h3 class="section-title">Key Findings</h3>
       <div class="findings-list">
         <div
           class="finding-item"
@@ -350,13 +316,8 @@ function getTrendDirection(slope) {
             >
             between temperature and yield (r={{
               statistics.tempYieldCorr.toFixed(2)
-            }}), suggesting
-            {{
-              statistics.tempYieldCorr > 0
-                ? "warmer temperatures may support"
-                : "heat stress may reduce"
-            }}
-            corn production.
+            }}) in the selected observations. This is an association, not a
+            causal estimate.
           </span>
         </div>
 
@@ -373,13 +334,8 @@ function getTrendDirection(slope) {
             >
             between precipitation and yield (r={{
               statistics.precipYieldCorr.toFixed(2)
-            }}), indicating
-            {{
-              statistics.precipYieldCorr > 0
-                ? "adequate rainfall is beneficial"
-                : "excessive rainfall may harm"
-            }}
-            for crop growth.
+            }}) in the selected observations. Other agricultural and regional
+            factors are not controlled here.
           </span>
         </div>
 
@@ -393,11 +349,8 @@ function getTrendDirection(slope) {
                 tempMetric
               }}</strong
             >
-            over the study period, showing
-            {{
-              Math.abs(statistics.tempChange) > 2 ? "significant" : "notable"
-            }}
-            climate change trends.
+            across the fitted study-period trend. This describes the selected
+            observations and is not a significance test.
           </span>
         </div>
 
@@ -408,12 +361,8 @@ function getTrendDirection(slope) {
             <strong
               >{{ statistics.yieldChange > 0 ? "improved" : "declined" }} by
               {{ Math.abs(statistics.yieldChange).toFixed(0) }} bu/acre</strong
-            >,
-            {{
-              statistics.yieldChange > 0
-                ? "likely due to technological advances in agriculture despite climate pressures"
-                : "raising concerns about agricultural sustainability"
-            }}.
+            > across the fitted trend. The dashboard does not identify the
+            causes of that change.
           </span>
         </div>
       </div>
@@ -435,49 +384,52 @@ function getTrendDirection(slope) {
 }
 
 .stat-card {
-  background: white;
-  border-radius: 10px;
+  background: #f5f2e9;
+  border-radius: 3px;
   padding: 1.25rem;
-  text-align: center;
-  border: 2px solid #f59e0b;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s;
+  text-align: left;
+  border: 1px solid #c9c4b6;
+  border-top: 3px solid #e3aa35;
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background: #efe9da;
 }
 
 .stat-icon {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1.25rem;
+  color: #2f6b4f;
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .stat-value {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #92400e;
+  color: #18332b;
   margin: 0.25rem 0;
 }
 
 .stat-label {
   font-size: 0.85rem;
-  color: #78350f;
+  color: #5f6f68;
   font-weight: 500;
 }
 
 .insights-section {
-  background: white;
-  border-radius: 10px;
+  background: #f5f2e9;
+  border-radius: 3px;
   padding: 1.25rem;
-  border: 2px solid #fbbf24;
+  border: 1px solid #c9c4b6;
 }
 
 .section-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #92400e;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: #18332b;
   margin: 0 0 1rem 0;
   display: flex;
   align-items: center;
@@ -492,19 +444,19 @@ function getTrendDirection(slope) {
 
 .correlation-item {
   padding: 1rem;
-  background: #fffbeb;
-  border-radius: 8px;
-  border: 1px solid #fcd34d;
+  background: #fffdf7;
+  border-radius: 2px;
+  border: 1px solid #d5cfbf;
 }
 
 .correlation-item.positive {
-  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-  border-color: #86efac;
+  background: #edf2eb;
+  border-color: #9db2a2;
 }
 
 .correlation-item.negative {
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  border-color: #fca5a5;
+  background: #f4e7df;
+  border-color: #c99e85;
 }
 
 .corr-header {
@@ -516,41 +468,41 @@ function getTrendDirection(slope) {
 
 .corr-title {
   font-weight: 600;
-  color: #1e293b;
+  color: #18332b;
   font-size: 0.95rem;
 }
 
 .corr-value {
   font-family: "Courier New", monospace;
   font-weight: 700;
-  color: #1e40af;
+  color: #2f6b4f;
   font-size: 0.9rem;
 }
 
 .corr-bar-container {
   height: 8px;
   background: rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
+  border-radius: 0;
   overflow: hidden;
   margin-bottom: 0.5rem;
 }
 
 .corr-bar {
   height: 100%;
-  background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+  background: #e3aa35;
   transition: width 0.3s ease;
 }
 
 .corr-interpretation {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #475569;
+  color: #40594f;
   margin-bottom: 0.25rem;
 }
 
 .corr-insight {
   font-size: 0.8rem;
-  color: #64748b;
+  color: #5f6f68;
   font-style: italic;
 }
 
@@ -564,13 +516,19 @@ function getTrendDirection(slope) {
   display: flex;
   gap: 1rem;
   padding: 1rem;
-  background: #fffbeb;
-  border-radius: 8px;
-  border: 1px solid #fcd34d;
+  background: #fffdf7;
+  border-radius: 2px;
+  border: 1px solid #d5cfbf;
 }
 
 .trend-icon {
-  font-size: 2.5rem;
+  min-width: 3rem;
+  padding-top: 0.2rem;
+  color: #2f6b4f;
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .trend-content {
@@ -579,7 +537,7 @@ function getTrendDirection(slope) {
 
 .trend-title {
   font-weight: 600;
-  color: #1e293b;
+  color: #18332b;
   font-size: 0.9rem;
   margin-bottom: 0.25rem;
 }
@@ -591,20 +549,20 @@ function getTrendDirection(slope) {
 }
 
 .trend-value.increasing {
-  color: #dc2626;
+  color: #b7653b;
 }
 
 .trend-value.decreasing {
-  color: #2563eb;
+  color: #4f7475;
 }
 
 .trend-value.stable {
-  color: #64748b;
+  color: #5f6f68;
 }
 
 .trend-description {
   font-size: 0.8rem;
-  color: #64748b;
+  color: #5f6f68;
 }
 
 .findings-list {
@@ -618,13 +576,13 @@ function getTrendDirection(slope) {
   gap: 0.75rem;
   align-items: flex-start;
   padding: 0.75rem;
-  background: #fffbeb;
-  border-radius: 6px;
-  border-left: 3px solid #f59e0b;
+  background: #fffdf7;
+  border-radius: 2px;
+  border-left: 3px solid #e3aa35;
 }
 
 .finding-bullet {
-  color: #f59e0b;
+  color: #e3aa35;
   font-weight: 700;
   font-size: 1.25rem;
   line-height: 1.4;
@@ -633,12 +591,12 @@ function getTrendDirection(slope) {
 .finding-text {
   flex: 1;
   font-size: 0.9rem;
-  color: #1e293b;
+  color: #18332b;
   line-height: 1.5;
 }
 
 .finding-text strong {
-  color: #92400e;
+  color: #2f6b4f;
 }
 
 @media (max-width: 768px) {

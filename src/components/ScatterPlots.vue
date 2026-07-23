@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import * as d3 from "d3";
+import { regressionFromPairs } from "../utils/statistics";
 
 const props = defineProps({
   data: { type: Array, required: true },
@@ -22,13 +23,22 @@ function render() {
   container.selectAll("*").remove();
 
   const containerWidth = container.node().clientWidth || 800;
-  const plotWidth = (containerWidth - 60) / 2;
-  const plotHeight = 400;
+  const stacked = containerWidth < 820;
+  const plotWidth = stacked ? containerWidth : (containerWidth - 60) / 2;
+  const plotHeight = stacked ? 350 : 400;
+  const fullHeight = stacked
+    ? plotHeight * 2 + margin.top + margin.bottom + 60
+    : plotHeight + margin.top + margin.bottom;
 
   const svg = container
     .append("svg")
     .attr("width", "100%")
-    .attr("height", plotHeight + margin.top + margin.bottom);
+    .attr("height", fullHeight)
+    .attr("role", "img")
+    .attr(
+      "aria-label",
+      "Two scatterplots showing corn yield against temperature and precipitation"
+    );
 
   const innerWidth = plotWidth - margin.left - margin.right;
   const innerHeight = plotHeight - margin.top - margin.bottom;
@@ -38,7 +48,7 @@ function render() {
     .attr("class", "scatter-tooltip-shared")
     .style("position", "absolute")
     .style("background", "rgba(255, 255, 255, 0.98)")
-    .style("color", "#1e293b")
+    .style("color", "#18332b")
     .style("padding", "10px 14px")
     .style("border-radius", "6px")
     .style("font-size", "13px")
@@ -71,20 +81,20 @@ function render() {
     .attr("transform", `translate(0,${innerHeight})`)
     .call(d3.axisBottom(x1))
     .selectAll("text")
-    .attr("fill", "#475569");
+    .attr("fill", "#5f6f68");
 
   g1.append("g")
     .call(d3.axisLeft(y1))
     .selectAll("text")
-    .attr("fill", "#475569");
+    .attr("fill", "#5f6f68");
 
-  g1.selectAll(".domain, .tick line").attr("stroke", "#cbd5e1");
+  g1.selectAll(".domain, .tick line").attr("stroke", "#c9c4b6");
 
   g1.append("text")
     .attr("x", innerWidth / 2)
     .attr("y", innerHeight + 40)
     .attr("text-anchor", "middle")
-    .attr("fill", "#1e293b")
+    .attr("fill", "#18332b")
     .attr("font-size", "12px")
     .attr("font-weight", "600")
     .text(`Temperature (°${props.tempMetric})`);
@@ -94,12 +104,12 @@ function render() {
     .attr("y", -45)
     .attr("x", -innerHeight / 2)
     .attr("text-anchor", "middle")
-    .attr("fill", "#1e293b")
+    .attr("fill", "#18332b")
     .attr("font-size", "12px")
     .attr("font-weight", "600")
     .text("Yield (bu/acre)");
 
-  const regression1 = linearRegression(
+  const regression1 = regressionFromPairs(
     props.data.map((d) => [tempAccessor(d), d.Yield_bu_acre])
   );
 
@@ -120,7 +130,7 @@ function render() {
           regression1.intercept
       )
     )
-    .attr("stroke", "#ef4444")
+    .attr("stroke", "#b7653b")
     .attr("stroke-width", 2)
     .attr("stroke-dasharray", "5,5")
     .attr("opacity", 0.6);
@@ -129,7 +139,7 @@ function render() {
     .attr("x", innerWidth - 10)
     .attr("y", 15)
     .attr("text-anchor", "end")
-    .attr("fill", "#ef4444")
+    .attr("fill", "#b7653b")
     .attr("font-size", "12px")
     .attr("font-weight", "600")
     .text(`r = ${regression1.r.toFixed(3)}`);
@@ -138,7 +148,9 @@ function render() {
     .append("g")
     .attr(
       "transform",
-      `translate(${plotWidth + 30 + margin.left},${margin.top})`
+      stacked
+        ? `translate(${margin.left},${plotHeight + margin.top + 50})`
+        : `translate(${plotWidth + 30 + margin.left},${margin.top})`
     );
 
   const x2 = d3
@@ -157,20 +169,20 @@ function render() {
     .attr("transform", `translate(0,${innerHeight})`)
     .call(d3.axisBottom(x2))
     .selectAll("text")
-    .attr("fill", "#475569");
+    .attr("fill", "#5f6f68");
 
   g2.append("g")
     .call(d3.axisLeft(y2))
     .selectAll("text")
-    .attr("fill", "#475569");
+    .attr("fill", "#5f6f68");
 
-  g2.selectAll(".domain, .tick line").attr("stroke", "#cbd5e1");
+  g2.selectAll(".domain, .tick line").attr("stroke", "#c9c4b6");
 
   g2.append("text")
     .attr("x", innerWidth / 2)
     .attr("y", innerHeight + 40)
     .attr("text-anchor", "middle")
-    .attr("fill", "#1e293b")
+    .attr("fill", "#18332b")
     .attr("font-size", "12px")
     .attr("font-weight", "600")
     .text("Precipitation (inches)");
@@ -180,12 +192,12 @@ function render() {
     .attr("y", -45)
     .attr("x", -innerHeight / 2)
     .attr("text-anchor", "middle")
-    .attr("fill", "#1e293b")
+    .attr("fill", "#18332b")
     .attr("font-size", "12px")
     .attr("font-weight", "600")
     .text("Yield (bu/acre)");
 
-  const regression2 = linearRegression(
+  const regression2 = regressionFromPairs(
     props.data.map((d) => [d.PRCP, d.Yield_bu_acre])
   );
 
@@ -206,7 +218,7 @@ function render() {
           regression2.intercept
       )
     )
-    .attr("stroke", "#3b82f6")
+    .attr("stroke", "#4f7475")
     .attr("stroke-width", 2)
     .attr("stroke-dasharray", "5,5")
     .attr("opacity", 0.6);
@@ -215,7 +227,7 @@ function render() {
     .attr("x", innerWidth - 10)
     .attr("y", 15)
     .attr("text-anchor", "end")
-    .attr("fill", "#3b82f6")
+    .attr("fill", "#4f7475")
     .attr("font-size", "12px")
     .attr("font-weight", "600")
     .text(`r = ${regression2.r.toFixed(3)}`);
@@ -230,12 +242,12 @@ function render() {
     .attr("r", (d) =>
       props.selectedState !== "ALL" && d.State === props.selectedState ? 7 : 4
     )
-    .attr("fill", "#ef4444")
+    .attr("fill", "#b7653b")
     .attr("opacity", (d) => {
       if (props.selectedState === "ALL") return 0.6;
       return d.State === props.selectedState ? 1 : 0.15;
     })
-    .attr("stroke", "#fff")
+    .attr("stroke", "#fffdf7")
     .attr("stroke-width", 1)
     .attr("cursor", "pointer");
 
@@ -249,12 +261,12 @@ function render() {
     .attr("r", (d) =>
       props.selectedState !== "ALL" && d.State === props.selectedState ? 7 : 4
     )
-    .attr("fill", "#3b82f6")
+    .attr("fill", "#4f7475")
     .attr("opacity", (d) => {
       if (props.selectedState === "ALL") return 0.6;
       return d.State === props.selectedState ? 1 : 0.15;
     })
-    .attr("stroke", "#fff")
+    .attr("stroke", "#fffdf7")
     .attr("stroke-width", 1)
     .attr("cursor", "pointer");
 
@@ -288,18 +300,18 @@ function render() {
             .style("opacity", 1)
             .html(
               `
-              <div style="font-weight: 700; color: #1e293b; margin-bottom: 6px; border-bottom: 2px solid #3b82f6; padding-bottom: 4px;">
+              <div style="font-weight: 700; color: #18332b; margin-bottom: 6px; border-bottom: 2px solid #e3aa35; padding-bottom: 4px;">
                 ${d.State} (${d.Year})
               </div>
-              <div style="color: #ef4444; margin: 4px 0;">
+              <div style="color: #b7653b; margin: 4px 0;">
                 <strong>Temp:</strong> ${tempAccessor(d).toFixed(1)}°${
                 props.tempMetric
               }
               </div>
-              <div style="color: #3b82f6; margin: 4px 0;">
+              <div style="color: #4f7475; margin: 4px 0;">
                 <strong>Precip:</strong> ${d.PRCP.toFixed(1)} in
               </div>
-              <div style="color: #10b981; margin: 4px 0;">
+              <div style="color: #2f6b4f; margin: 4px 0;">
                 <strong>Yield:</strong> ${d.Yield_bu_acre.toFixed(1)} bu/acre
               </div>
             `
@@ -407,31 +419,6 @@ function render() {
   }
 }
 
-function linearRegression(data) {
-  const n = data.length;
-  let sumX = 0,
-    sumY = 0,
-    sumXY = 0,
-    sumX2 = 0,
-    sumY2 = 0;
-
-  data.forEach(([x, y]) => {
-    sumX += x;
-    sumY += y;
-    sumXY += x * y;
-    sumX2 += x * x;
-    sumY2 += y * y;
-  });
-
-  const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-  const intercept = (sumY - slope * sumX) / n;
-  const r =
-    (n * sumXY - sumX * sumY) /
-    Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
-
-  return { slope, intercept, r };
-}
-
 watch(enableBrush, (newVal) => {
   if (!newVal) {
     emit("brush-selection", []);
@@ -484,26 +471,30 @@ watch(
           gap: 0.5rem;
           cursor: pointer;
           font-size: 0.95rem;
-          color: #475569;
+          color: #5f6f68;
         "
       >
         <input type="checkbox" v-model="enableBrush" style="cursor: pointer" />
         <span style="font-weight: 600">
-          Enable Brush Selection (for Parallel Coordinates)
+          Enable rectangular selection
         </span>
       </label>
-      <span style="font-size: 0.85rem; color: #64748b; font-style: italic">
+      <span style="font-size: 0.85rem; color: #5f6f68; font-style: italic">
         {{
           enableBrush
-            ? "Drag to select, click to select state"
+            ? "Drag inside either plot to highlight the same records below"
             : "Hover to see details, click to select state"
         }}
       </span>
     </div>
-    <div ref="containerRef" style="position: relative; width: 100%"></div>
+    <div ref="containerRef" class="scatter-chart"></div>
   </div>
 </template>
 
 <style scoped>
-/* no additional styles needed; tooltip is styled inline */
+.scatter-chart {
+  position: relative;
+  width: 100%;
+  min-width: 300px;
+}
 </style>
