@@ -139,11 +139,3 @@ Developed collaboratively by **Manikanta Macha** and **Yashwanth Kumar
 Mogili**. The first version was created for Interactive Data Visualization at
 the University of Iowa in Fall 2025 and subsequently revised as a portfolio
 case study.
-
-Before using this work in a résumé or interview, describe your individual
-contribution accurately and retain your teammate's credit.
-
-## License
-
-No open-source license has been selected. Permission from both project authors
-should be confirmed before adding one.
